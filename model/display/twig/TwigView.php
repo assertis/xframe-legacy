@@ -20,7 +20,7 @@ class TwigView extends View {
         parent::__construct(APP_DIR."view".DIRECTORY_SEPARATOR, ".html");
 
         try {
-            require_once '/path/to/lib/Twig/Autoloader.php';
+            require_once 'Twig/Autoloader.php';
             Twig_Autoloader::register();
         }
         catch(FrameEx $ex) {
