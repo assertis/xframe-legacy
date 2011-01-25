@@ -18,7 +18,7 @@ abstract class View {
     public function __construct($viewDirectory = null, $viewExtension = null) {
         $this->parameters = array();
         $this->exceptions = array();
-        $this->viewDirectory = $viewDirectory == null ? APP_DIR."view".DIRECTORY_SEPARATOR : $viewDirectory;
+        $this->viewDirectory = $viewDirectory === null ? APP_DIR."view".DIRECTORY_SEPARATOR : $viewDirectory;
         $this->viewExtension = $viewExtension;
     }
 
