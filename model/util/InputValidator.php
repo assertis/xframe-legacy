@@ -115,4 +115,13 @@ class InputValidator {
     public static function isPostCode($input) {
         return preg_match("/^([A-PR-UWYZ0-9][A-HK-Y0-9][AEHMNPRTVXY0-9]?[ABEHMNPRVWXY0-9]? {1,2}[0-9][ABD-HJLN-UW-Z]{2}|GIR 0AA)$/", $input);
     }
+    
+    /**
+     * Check if $input is a valid telephone number.
+     * @param <type> $input
+     * @return boolean
+     */
+    public static function isPhoneNumber($input) {
+        return preg_match("/^[0-9\+ ]{9,20}$/", $input);
+    }
 }
