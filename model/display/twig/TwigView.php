@@ -23,7 +23,7 @@ class TwigView extends View {
         parent::__construct("", ".html");
 
         try {
-            require_once 'Twig/Autoloader.php';
+            include_once 'Twig/Autoloader.php';
             Twig_Autoloader::register();
         }
         catch(FrameEx $ex) {
