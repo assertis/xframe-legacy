@@ -11,13 +11,16 @@ class TwigView extends View {
      * @var Twig
      */
     private $twig;
+    /**
+     * @var array
+     */
     private $model;
 
     /**
      * Constructor sets up the PHPTAL object
      */
     public function  __construct() {
-        parent::__construct(APP_DIR."view".DIRECTORY_SEPARATOR, ".html");
+        parent::__construct("", ".html");
 
         try {
             require_once 'Twig/Autoloader.php';
@@ -30,7 +33,7 @@ class TwigView extends View {
 
         $this->model = array();
         $this->twig = new Twig_Environment(
-            new Twig_Loader_Filesystem($root."view".DIRECTORY_SEPARATOR),
+            new Twig_Loader_Filesystem(APP_DIR."view".DIRECTORY_SEPARATOR),
             array(
                 'cache' => sys_get_temp_dir(),
                 'debug' => false,
@@ -75,6 +78,15 @@ class TwigView extends View {
      */
     public function __set($key, $value) {
         $this->add($value, $key);
+    }
+
+    /**
+     * Add a parameter to the view for the template
+     * @param string $key
+     * @param mixed $value
+     */
+    public function addParameter($key, $value) {
+        $this->add($key, $value);
     }
 }
 
