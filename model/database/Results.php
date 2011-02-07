@@ -106,6 +106,14 @@ class Results implements ArrayAccess, Countable, SeekableIterator, XML, Transfor
         return $this->customTag;
     }
 
+    /**
+     * Set the XML tag that will wrap the results and pagination
+     * @return string
+     */
+    public function setCustomTag($tag) {
+        $this->customTag = $tag;
+    }
+
     /** grabs you the first item from the array */
     public function first() {
         reset($this->results);
