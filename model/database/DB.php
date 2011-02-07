@@ -8,8 +8,8 @@
  * This is essentially a singleton for a PDO database
  */
 class DB {
-    private static $instance = false;
-
+    private static $instance;
+    private static $slave;
 
     /**
      * Create a PDO instance based on the settings in the registry
@@ -19,7 +19,8 @@ class DB {
         $class = Registry::get("DATABASE_DEBUG") ? "LoggedPDO" : "PDO";
 
         try {
-            self::$instance = new $class($db.":host=".Registry::get("DATABASE_HOST"). (Registry::get("DATABASE_PORT") ? ";port=". Registry::get("DATABASE_NAME") : null). ";dbname=".Registry::get("DATABASE_NAME"),
+            self::$instance = new $class($db.":host=".Registry::get("DATABASE_HOST"). 
+                                         (Registry::get("DATABASE_PORT") ? ";port=". Registry::get("DATABASE_PORT") : null). ";dbname=".Registry::get("DATABASE_NAME"),
                                          Registry::get("DATABASE_USERNAME"),
                                          Registry::get("DATABASE_PASSWORD"));
             self::$instance->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -48,6 +49,43 @@ class DB {
      */
     public static function setInstance(PDO $newInstance) {
         self::$instance = $newInstance;
+    }
+
+    /**
+     * Get the read only slave connection
+     * @return PDO
+     */
+    public static function slave() {
+        if (!self::$slave instanceof PDO) {
+            self::getSlave();
+        }
+
+        return self::$slave;
+    }
+
+    /**
+     * Set the slave instance
+     */
+    private static function getSlave() {
+        $db = Registry::get("DATABASE_ENGINE");
+
+        try {
+            self::$slave = new PDO($db.":host=".Registry::get("SLAVE_HOST"). (Registry::get("SLAVE_PORT") ? ";port=". Registry::get("SLAVE_PORT") : null). ";dbname=".Registry::get("DATABASE_NAME"),
+                                   Registry::get("DATABASE_USERNAME"),
+                                   Registry::get("DATABASE_PASSWORD"));
+            self::$slave->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        }
+        catch (PDOException $ex) {
+            throw new FrameEx("Could not connect to slave", 0, FrameEx::HIGH, $ex);
+        }
+    }
+
+    /**
+     * Set the slave instance
+     * @param PDO $newSlave
+     */
+    public static function setSlave(PDO $newSlave) {
+        self::$slave = $newSlave;
     }
 
 
