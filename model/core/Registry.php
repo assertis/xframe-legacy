@@ -90,9 +90,9 @@ class Registry {
                 }
             }
             
-            if (Registry::get("CACHE_ENABLED")) {
-                Cache::mch()->set($site."config", self::$settings);
-            }
+//            if (Registry::get("CACHE_ENABLED")) {
+//                Cache::mch()->set($site."config", self::$settings);
+//            }
 //        }
 //        else {
 //            Registry::$settings = $settings;
