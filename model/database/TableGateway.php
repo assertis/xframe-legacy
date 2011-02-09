@@ -164,9 +164,6 @@ class TableGateway {
         $records = array();
 
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            if (Registry::get("CACHE_ENABLED")) {
-                Cache::mch()->set($tableName.$row["id"], $row, false, 0);
-            }
             //call the given object's create method, this will be replaced with __STATIC__
             $records[] = call_user_func(array($class, $method), $row, $tableName);
         }
