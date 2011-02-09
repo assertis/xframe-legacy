@@ -133,7 +133,7 @@ class Controller {
         $response = false;
 
         //see if we can grab it from the cache
-        if (Registry::get("CACHE_ENABLED")) {
+        if (Registry::get("CACHE_ENABLED")  && $this->resource->getCacheLength() !== false) {
             $response =  $this->getResponseFromCache();
         }
 
