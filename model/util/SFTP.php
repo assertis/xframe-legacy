@@ -8,6 +8,7 @@
 
 class SFTP {
     private $connection;
+    private $sftp;
     private $host;
     private $port;
     private $username;
@@ -42,19 +43,62 @@ class SFTP {
         if (!@ssh2_auth_password($this->connection, $this->username, $this->password)) {
             throw new FrameEx("Invalid username or password");
         }
+
+        $this->sftp = ssh2_sftp($this->connection);
     }
 
     public function put($localFilename, $remoteFilename, $retries = 1) {
-        if (!@ssh2_scp_send($this->connection, $localFilename, $remoteFilename)) {
-            throw new FrameEx("Failed to put {$localFilename}");
+        $contents = @file_get_contents($localFilename);
+        if ($contents === false) {
+            throw new FrameEx("Could not open local file: {$localFilename}.");
         }
+
+        $stream = fopen("ssh2.sftp://{$this->sftp}/{$remoteFilename}", 'w');
+        if (!$stream) {
+            throw new FrameEx("Could not open file: {$remoteFilename}");
+        }
+
+        $tries = 0;
+        $done = false;
+
+        while (!$done && $tries < $retries) {
+            if (@fwrite($stream, $contents) === false) {
+                $retries++;
+            }
+            else {
+                $done = true;
+            }
+        }
+
+        if (!$done) {
+            throw new FrameEx("Could not send file {$remoteFilename}.");
+        }
+        @fclose($stream);
     }
 
     public function get($remoteFilename, $localFilename, $retries = 1) {
-        if (!@ssh2_scp_recv($this->connection, $remoteFilename, $localFilename)) {
-            throw new FrameEx("Failed to get {$remoteFilename}");
+        $stream = @fopen("ssh2.sftp://{$this->sftp}{$remoteFilename}", 'r');
+        if (!$stream) {
+            throw new FrameEx("Could not open file: {$remoteFilename}");
         }
 
+        $tries = 0;
+        $done = false;
+        
+        while (!$done && $tries < $retries) {
+            $contents = @fread($stream, filesize("ssh2.sftp://".$this->sftp.$remoteFilename));
+            if ($contents === false) {
+                $retries++;
+            }
+            else {
+                $done = true;
+            }
+        }
+
+        if (false === @file_put_contents ($localFilename, $contents)) {
+            throw new FrameEx("Could not write to {$localFilename}");
+        }
+        @fclose($stream);
     }
 
 }
