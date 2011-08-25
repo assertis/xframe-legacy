@@ -54,8 +54,12 @@ class DbAuth implements AuthenticationAdapter {
      * @param string $cred The credential e.g. password or token or key code
      * @return DbAuth
      */
-    public function setCredential($credential) {
-        $this->credential = sha1($credential);
+    public function setCredential($credential, $hash = true) {
+        if ($hash) {
+            $credential = sha1($credential);
+        }
+
+        $this->credential = $credential;
         return $this;
     }
 
@@ -77,7 +81,6 @@ class DbAuth implements AuthenticationAdapter {
 
         $identity = $this->getIdentity();
         Assert::isNotEmpty($identity, "You must set an username before authentication");
-
         $criteria = new Criteria(Restriction::is($this->credentialColumn, $credential));
         $criteria->addAnd(Restriction::is($this->identityColumn, $identity));
 
