@@ -6,7 +6,7 @@
  */
 
 class Form implements XML {
-    private $INVALID_FIELD_CHARS = array(";","&");
+    private $INVALID_FIELD_CHARS = array("'",";","&");
     private $field;
     private $hasErrors;
 
