@@ -6,6 +6,7 @@
  */
 
 class Form implements XML {
+    private $INVALID_FIELD_CHARS = array(";","&");
     private $field;
     private $hasErrors;
 
@@ -32,6 +33,8 @@ class Form implements XML {
      * @param int $errorCode
      */
     public function add($id, $value, $errorMessage = null, $errorCode = null) {
+        $id = str_replace($this->INVALID_FIELD_CHARS, "", $id);
+
         $this->field[$id] = array("value" => $value, "error" => $errorMessage, "code" => $errorCode);
         if ($errorMessage != null || $errorCode != null) {
             $this->hasErrors = true;
