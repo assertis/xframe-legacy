@@ -72,7 +72,7 @@ class FrameEx extends Exception {
      */
     protected function email() {
         $headers  = 'MIME-Version: 1.0' . "\r\n";
-        $headers .= 'From: "'.$_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"].'" <xframe@'.$_SERVER["SERVER_NAME"].'>' . "\r\n";
+        $headers .= 'From: "'.$_SERVER["SERVER_NAME"].'" <xframe@'.$_SERVER["SERVER_NAME"].'>' . "\r\n";
         $headers .= 'Content-type: text/plain; charset=iso-8859-1' . "\r\n";
 
 
@@ -95,9 +95,22 @@ class FrameEx extends Exception {
      * Get the XML for this exception
      */
     public function getXML() {
+        $location = "".$_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"];
         $out = "<exception>";
         $out .= "<message>".htmlspecialchars($this->message, ENT_COMPAT, "UTF-8", false)."</message>";
         $out .= "<code>".htmlspecialchars($this->code, ENT_COMPAT, "UTF-8", false)."</code>";
+        $out .= "<location>".htmlspecialchars($location, ENT_COMPAT, "UTF-8", false)."</location>";
+        $out .= "<getVariables>";
+        foreach ($_GET as $key => $value){
+            $out .= "<variable key='".$key."' value='".$value."' />";
+        }
+        $out .= "</getVariables>";
+        $out .= "<postVariables>";
+        foreach ($_POST as $key => $value){
+                    $out .= "<variable key='".$key."' value='".$value."' />";
+        }
+        $out .= "</postVariables>";
+        $out .= "<ipaddress>".$_SERVER['REMOTE_ADDR']."</ipaddress>";
         $out .= "<backtrace>";
         $i = 1;
 
