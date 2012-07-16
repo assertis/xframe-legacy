@@ -21,7 +21,7 @@ class Registry {
                 $file = "config/".$file;
             }
             else if (!file_exists("config/dev.ini")) {
-                die("Unable to find configuration file: ".$file);
+                trigger_error("Unable to find configuration file: ".$file);
             }
             else {
                 $file = "config/dev.ini";
@@ -33,7 +33,7 @@ class Registry {
         $appDir = self::$settings["APP_DIR"];
 
         if ($appDir == null) {
-            die("Unable to find APP_DIR setting in {$file}");
+            trigger_error("Unable to find APP_DIR setting in {$file}");
         }
 
         define("APP_DIR", $appDir);

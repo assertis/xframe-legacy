@@ -151,7 +151,7 @@
             file_put_contents($filename, $contents, LOCK_EX);
         }
         catch (FrameEx $ex) {
-            die("Could not write {$filename}, please check permissions.");
+            trigger_error("Could not write {$filename}, please check permissions.");
         }
         
         //set so only this users group can read and write the file

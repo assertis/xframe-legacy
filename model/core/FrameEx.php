@@ -234,11 +234,11 @@ class FrameEx extends Exception {
             $exception->process();
         }
         catch (Exception $e) {
-            die("Error logging exception: ".$e->getMessage());
+            trigger_error("Error logging exception: ".$e->getMessage());
         }
 
         //finally echo it out
-        die($exception->__toString());
+        trigger_error($exception->__toString());
     }
 
     /**
