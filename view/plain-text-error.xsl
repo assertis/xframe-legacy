@@ -3,6 +3,9 @@
 
 <output method="text"/>
 
+<variable name='newline'><text>
+</text></variable>
+
 <template match="/">
 <if test="count(/root/errors/error)!=0 or count(/root/exceptions/exception)!=0">
 
@@ -17,11 +20,23 @@ The following errors occured:
 
 <for-each select="/root/errors/error">
 
-<value-of select="./@type" />: <value-of select="./message" />
+<value-of select="./@type" />: <value-of select="./message"  />
 Backtrace:
 
 <for-each select="./backtrace/step">[<value-of select="./@number" />] line <value-of select="./@line" /> of <value-of select="./@file" /> called <value-of select="./@class" /><if test="./@class!=''">-></if><value-of select="./@function" />()
 </for-each>
+
+Location: <value-of select="./location"  />
+Connection from: <value-of select="./ipaddress"  />
+GET values: 
+<for-each select="./getVariables/variable">
+    <text>&#9;</text><value-of select="./@key"  /><if test="string-length(./@key)&lt; 8"><text>&#9;</text></if><if test="string-length(./@key)&lt; 16"><text>&#9;</text></if><text>&#9;</text>: <value-of select="concat(./@value, $newline)"  />
+</for-each>
+POST values: 
+<for-each select="./postVariables/variable">
+    <text>&#9;</text><value-of select="./@key"  /><if test="string-length(./@key)&lt; 8"><text>&#9;</text></if><if test="string-length(./@key)&lt; 16"><text>&#9;</text></if><text>&#9;</text>: <value-of select="concat(./@value, $newline)"  />
+</for-each>
+
 </for-each>
     </if>
     <if test="count(/root/exceptions/exception)!=0">
@@ -34,8 +49,19 @@ Backtrace:
 
 <for-each select="./backtrace/step">[<value-of select="./@number" />] line <value-of select="./@line" /> of <value-of select="./@file" /> called <value-of select="./@class" /> <if test="./@class!=''">-></if><value-of select="./@function" />()
 </for-each>
+
+Location: <value-of select="./location"  />
+Connection from: <value-of select="./ipaddress"  />
+GET values: 
+<for-each select="./getVariables/variable">
+    <text>&#9;</text><value-of select="./@key"  /><if test="string-length(./@key)&lt; 8"><text>&#9;</text></if><if test="string-length(./@key)&lt; 16"><text>&#9;</text></if><text>&#9;</text>: <value-of select="concat(./@value, $newline)"  />
+</for-each>
+POST values: 
+<for-each select="./postVariables/variable">
+    <text>&#9;</text><value-of select="./@key"  /><if test="string-length(./@key)&lt; 8"><text>&#9;</text></if><if test="string-length(./@key)&lt; 16"><text>&#9;</text></if><text>&#9;</text>: <value-of select="concat(./@value, $newline)"  />
+</for-each>
+
 </for-each>
     </if>
 </template>
 </stylesheet>
-

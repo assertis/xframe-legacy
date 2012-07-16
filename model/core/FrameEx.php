@@ -96,6 +96,9 @@ class FrameEx extends Exception {
      */
     public function getXML() {
         $location = "".$_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"];
+        if ($location == ""){
+            $location = "". $_SERVER["SCRIPT_FILENAME"];
+        }
         $out = "<exception>";
         $out .= "<message>".htmlspecialchars($this->message, ENT_COMPAT, "UTF-8", false)."</message>";
         $out .= "<code>".htmlspecialchars($this->code, ENT_COMPAT, "UTF-8", false)."</code>";
