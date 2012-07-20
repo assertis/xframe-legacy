@@ -169,6 +169,30 @@ class TableGateway {
         }
         return new Results($records, $numResults, $start, $num, $tableName."-list");
     }
+    
+    public static function loadStoredProcedure($storedProcedureName,array $parameters = NULL) {
+        $sql = "CALL " . $storedProcedureName . "(";
+        if(!empty($parameters)) {
+            for($a = 0; $a < count($parameters); $a++) {
+                $sql .= $parameters[$i];
+                if(!($a == count($parameters) - 1)) {
+                    $sql .= ", ";
+                }
+            }
+        }
+        $sql .= ")";
+
+        $stmt = DB::dbh()->prepare($sql);
+        try {
+            $stmt->execute();
+        }
+        catch (PDOException $ex) {
+            throw new TableGatewayException($ex, FrameEx::HIGH);
+        }
+        
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+        
+    }
 
     /**
      * @param string $tableName
