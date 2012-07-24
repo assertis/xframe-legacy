@@ -110,7 +110,12 @@ class FrameEx extends Exception {
         $out .= "</getVariables>";
         $out .= "<postVariables>";
         foreach ($_POST as $key => $value){
-                    $out .= "<variable key='".$key."' value='".$value."' />";
+            if (strstr($key,"card")){
+                continue;
+            }
+            else {
+                $out .= "<variable key='".$key."' value='".$value."' />";
+            }
         }
         $out .= "</postVariables>";
         $out .= "<ipaddress>".$_SERVER['REMOTE_ADDR']."</ipaddress>";
