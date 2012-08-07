@@ -77,7 +77,7 @@ class FrameEx extends Exception {
 
 
         mail(Registry::get("ADMIN"),
-             $this->message,
+             substr($this->message,0,79),
              $this->getContent(),
              $headers);
     }
