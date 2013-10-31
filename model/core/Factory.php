@@ -191,7 +191,9 @@
         try {
             include($tmpPath.".classes.php");
         }
-        catch (FrameEx  $ex) { /*file does not exist*/ }
+        catch (FrameEx  $ex) { 
+            self::rebuildDirectory($package."/");               
+        }
 
         //boot
         try {
