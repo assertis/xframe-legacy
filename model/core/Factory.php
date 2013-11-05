@@ -154,9 +154,9 @@
             trigger_error("Could not write {$filename}, please check permissions.");
         }
         
-        //set so only this users group can read and write the file
+        //make the class map globally available
         try {
-            chmod($filename, 0660);
+            chmod($filename, 0777);
         }
         catch (FrameEx $ex) { /* we tried */ }
     }
