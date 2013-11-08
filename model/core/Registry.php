@@ -89,7 +89,7 @@ class Registry {
                     try {
                         Registry::loadFromDB($table);                        
                     }
-                    catch(FrameEx $ex) { }
+                    catch(Exception $ex) { }
                 }
             }
             
