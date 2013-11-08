@@ -86,7 +86,10 @@ class Registry {
 
             if (is_array($databaseSettings)) {
                 foreach ($databaseSettings as $table) {
-                    Registry::loadFromDB($table);
+                    try {
+                        Registry::loadFromDB($table);                        
+                    }
+                    catch(FrameEx $ex) { }
                 }
             }
             
