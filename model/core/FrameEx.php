@@ -210,7 +210,7 @@ class FrameEx extends Exception {
     /**
      * Handles PHP generated errors
      */
-    public function errorHandler($type, $msg, $filename, $line ) {
+    public static function errorHandler($type, $msg, $filename, $line ) {
         if (!(error_reporting() & $type)) {
             // This error code is not included in error_reporting
             return;
@@ -242,7 +242,7 @@ class FrameEx extends Exception {
      *
      * @param Exception $exception
      */
-    public function exceptionHandler($exception) {
+    public static function exceptionHandler($exception) {
         //if it's not a FrameEx make it one
         if (!($exception instanceof FrameEx)) {
             $exception = new FrameEx($exception->getMessage(),
