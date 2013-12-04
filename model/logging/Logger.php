@@ -95,6 +95,7 @@ class Logger {
         if ($fp) {
             fwrite($fp, $message."\n");
             fclose($fp);
+            @chmod($this->logFile, 0775); 
         }
     }
 
