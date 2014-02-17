@@ -23,7 +23,7 @@ class RequestMapGenerator {
         //for each file in the directory
         while (($file = readdir($dh)) !== false) {
             //if it is something we want to ignore...
-            if ($file == "test" || $file == "." || $file == ".."  || $file == ".svn" || $file == "vendor") {
+            if (strpos($file, '.') === 0 || $file == "test" || $file == "vendor") {
                 continue;
             }
             //if it is a directory...
