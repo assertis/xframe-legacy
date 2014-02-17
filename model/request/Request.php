@@ -12,6 +12,9 @@ class Request implements XML {
     private $parameters;
     private $mappedParameters;
 
+    const GET = 'GET',
+          POST = 'POST';
+
     /**
      *
      * @param string $requestURI
@@ -20,7 +23,8 @@ class Request implements XML {
      */
     public function __construct($requestURI,
                                 array $parameters = array(),
-                                $phpSelf = "/index.php") {
+                                $phpSelf = "/index.php",
+                                $requestType = Request::GET) {
 
         //get the base directory
         $baseDirectory = substr($phpSelf, 0, -10);
@@ -126,7 +130,7 @@ class Request implements XML {
      * Return a hash of the Request
      */
     public function hash() {
-        return md5($this->requestedResource.implode($this->mappedParameters).implode(array_keys($this->mappedParameters)));
+        return md5($this->requestedResource . implode($this->mappedParameters) . implode(array_keys($this->mappedParameters)));
     }
 
     /**
