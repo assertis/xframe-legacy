@@ -65,8 +65,8 @@ class RequestMapGenerator {
             $annotation = new ReflectionAnnotatedMethod($method->class, $method->name);
 
             //if it is a request handler
-            if ($annotation->hasAnnotation("RequestType")) {
-                $requestName = $annotation->getAnnotation("RequestType")->value;
+            if ($annotation->hasAnnotation("RequestName")) {
+                $requestName = $annotation->getAnnotation("RequestName")->value;
                 $requestType = Request::GET;
             }
             else if ($annotation->hasAnnotation("GET")) {
@@ -76,6 +76,9 @@ class RequestMapGenerator {
             else if ($annotation->hasAnnotation("POST")) {
                 $requestName = $annotation->getAnnotation("POST")->value;
                 $requestType = Request::POST;
+            }
+            else {
+                continue;
             }
 
             $mappedParams = $annotation->getAnnotation("RequestParams")->value == null ? array() : $annotation->getAnnotation("RequestParams")->value;
@@ -100,6 +103,7 @@ class RequestMapGenerator {
                                      $viewTemplate,
                                      null,
                                      $customParams);
+
             $string .= "Dispatcher::addResource(unserialize('" . serialize($resource) . "'));\n";
         }
 

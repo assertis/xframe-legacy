@@ -17,12 +17,6 @@ class Dispatcher {
      * @return string
      */
     public static function dispatch(Request $r) {
-        // RequestMapGenerator::buildAll(true);
-
-        // print_r(Resource::getKey($r->getRequestedResource(), $_SERVER['REQUEST_METHOD']));
-        // print_r(self::$listeners);
-        // die;
-
         //if we have a mapping for the request
         if (array_key_exists($r->getKey(), self::$listeners)) {
             //return the response from the controller
@@ -54,13 +48,13 @@ class Dispatcher {
      * @param String $requestType
      */
     public static function addListener($requestName, $class, $method, $cacheLength = false, array $parameterMap = array(), $authenticator = null, $requestType = Request::GET) {
-        self::$listeners[Request::getKey($requestName, $requestType)] = new Resource($requestName,
-                                                                                     $requestType,
-                                                                                     $class,
-                                                                                     $method,
-                                                                                     $parameterMap,
-                                                                                     $authenticator,
-                                                                                     $cacheLength);
+        self::$listeners[Request::makeKey($requestType, $requestName)] = new Resource($requestName,
+                                                                                      $requestType,
+                                                                                      $class,
+                                                                                      $method,
+                                                                                      $parameterMap,
+                                                                                      $authenticator,
+                                                                                      $cacheLength);
     }
 
     /**
@@ -69,7 +63,7 @@ class Dispatcher {
      * @param Resource $resource
      */
     public static function addResource(Resource $resource) {
-        self::$listeners[$r->getKey()] = $resource;
+        self::$listeners[$resource->getKey()] = $resource;
     }
 
     /**
@@ -91,8 +85,8 @@ class Dispatcher {
      * @param array $requestName
      * @return array
      */
-    public static function getParameterMap($requestName, $requestType = Request::GET) {
-        return array_key_exists(Request::makeKey($requestName, $resourceType), self::$listeners) ? self::$listeners[Request::makeKey($requestName, $requestType)]->getParameterMap() : array();
+    public static function getParameterMap($requestName, $requestType) {
+        return array_key_exists(Request::makeKey($resourceType, $requestName), self::$listeners) ? self::$listeners[Request::makeKey($requestType, $requestName)]->getParameterMap() : array();
     }
 
     /**
