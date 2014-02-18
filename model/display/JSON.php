@@ -4,6 +4,7 @@
  */
 class JSON extends View {
     private $data = array();
+    private $status = 200;
 
     public function __construct() {
         parent::__construct();
@@ -12,12 +13,17 @@ class JSON extends View {
     public function execute() {
         if (!headers_sent()) {
             header("content-type: application/json");
+            header("status: " . $this->status);
         }
         return json_encode($this->data);
     }
 
     public function getErrorPage() {
 
+    }
+
+    public function setStatusCode($code) {
+        $this->status = $code;
     }
 
     public function set($data) {
