@@ -103,8 +103,8 @@ class Resource extends Record {
         return $this->view_template;
     }
 
-    public static function getKey($name, $type) {
-        return $type . '_' . $name;
+    public function getKey() {
+        return Request::makeKey($this->type . '_' . $this->name);
     }
 
     /**

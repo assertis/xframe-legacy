@@ -46,6 +46,8 @@ class Request implements XML {
         $this->mappedParameters = $parameters;
         //get the $_FILES array
         $this->files = $_FILES;
+
+        $this->requestType = $requestType;
     }
 
     /**
@@ -67,6 +69,10 @@ class Request implements XML {
      */
     public function getRequestedResource() {
         return $this->requestedResource;
+    }
+
+    public function getRequestType() {
+        return $this->requestType;
     }
 
     /**
@@ -131,6 +137,14 @@ class Request implements XML {
      */
     public function hash() {
         return md5($this->requestedResource . implode($this->mappedParameters) . implode(array_keys($this->mappedParameters)));
+    }
+
+    public static function makeKey($type, $resource) {
+        return $type . '_' . $resource;
+    }
+
+    public function getKey() {
+        return Request::makeKey($this->requestType . '_' . $this->requestedResource);
     }
 
     /**
