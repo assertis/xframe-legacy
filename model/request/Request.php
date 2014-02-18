@@ -11,6 +11,7 @@ class Request implements XML {
     private $requestedResource;
     private $parameters;
     private $mappedParameters;
+    private $requestType;
 
     const GET = 'GET',
           POST = 'POST';
@@ -144,7 +145,7 @@ class Request implements XML {
     }
 
     public function getKey() {
-        return Request::makeKey($this->requestType . '_' . $this->requestedResource);
+        return Request::makeKey($this->requestType, $this->requestedResource);
     }
 
     /**

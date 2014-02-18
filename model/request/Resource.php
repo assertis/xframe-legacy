@@ -104,7 +104,7 @@ class Resource extends Record {
     }
 
     public function getKey() {
-        return Request::makeKey($this->type . '_' . $this->name);
+        return Request::makeKey($this->type, $this->name);
     }
 
     /**
@@ -137,6 +137,6 @@ class Resource extends Record {
      */
     public static function getFromRequest(Request $request) {
         $resources = Dispatcher::getListeners();
-        return $resources[$request->getRequestedResource()];
+        return $resources[$request->getKey()];
     }
 }
