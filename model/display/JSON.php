@@ -25,10 +25,12 @@ class JSON extends View {
     }
 
     public function add($data, $key = null) {
-        if ($key == null)
+        if ($key == null) {
             $this->data[] = $data;
-        else
+        }
+        else {
             $this->data[$key] = $data;
+        }
     }
 
     public function addStaticInclude($path) {
