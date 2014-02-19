@@ -4,6 +4,7 @@
  */
 class JSON extends View {
     private $data = array();
+    private $ex;
     private $status;
 
     public function __construct() {
@@ -21,7 +22,8 @@ class JSON extends View {
     }
 
     public function getErrorPage() {
-
+        $this->data = $this->ex->getJSON();
+        return $this->execute();
     }
 
     public function setStatusCode($code) {
@@ -71,6 +73,10 @@ class JSON extends View {
         $protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
 
         $this->status = $protocol . ' ' . $code . ' ' . $text;
+    }
+
+    public function setException(FrameEx $ex) {
+        $this->ex = $ex;
     }
 
     public function set($data) {
