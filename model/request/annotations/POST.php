@@ -1,6 +1,6 @@
 <?php
 
 /**
- * @author Linus Norton <linusnorton@gmail.com>
+ * @author Marek
  */
 class POST extends Annotation { }
