@@ -77,6 +77,10 @@ class RequestMapGenerator {
                 $requestName = $annotation->getAnnotation("POST")->value;
                 $requestType = Request::POST;
             }
+            else if ($annotation->hasAnnotation("DELETE")) {
+                $requestName = $annotation->getAnnotation("DELETE")->value;
+                $requestType = Request::DELETE;
+            }
             else {
                 continue;
             }

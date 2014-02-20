@@ -14,7 +14,8 @@ class Request implements XML {
     private $requestType;
 
     const GET = 'GET',
-          POST = 'POST';
+          POST = 'POST',
+          DELETE = 'DELETE';
 
     /**
      *
