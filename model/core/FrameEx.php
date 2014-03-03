@@ -51,10 +51,10 @@ class FrameEx extends Exception {
      * to be logged or emailed (or both)
      */
     public function process() {
-        if (Registry::get("ERROR_LOG_LEVEL") >= $this->severity) {
+        if (Registry::get("ERROR_LOG_LEVEL") >= $this->severity ){
             $this->log();
         }
-        if (Registry::get("ERROR_EMAIL_LEVEL") >= $this->severity) {
+        if (Registry::get("ERROR_EMAIL_LEVEL") >= $this->severity ){
             $this->email();
         }
     }
@@ -130,20 +130,6 @@ class FrameEx extends Exception {
         $out .= "</backtrace>";
         $out .= "</exception>";
         return $out;
-    }
-
-    public function getJSON() {
-        $location = "".$_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"];
-        if ($location == ""){
-            $location = "". $_SERVER["SCRIPT_FILENAME"];
-        }
-
-        return array(
-            'exception' => array(
-                'message' => htmlspecialchars($this->message, ENT_COMPAT, "UTF-8", false),
-                'code' => htmlspecialchars($this->code, ENT_COMPAT, "UTF-8", false)
-            )
-        );
     }
 
     /**
@@ -284,20 +270,21 @@ class FrameEx extends Exception {
         set_error_handler(array("FrameEx", "errorHandler"), ini_get("error_reporting"));
     }
 
-    public function getIP() {
+public function getIP()
+{
        if (getenv("HTTP_CLIENT_IP") && strcasecmp(getenv("HTTP_CLIENT_IP"),
 "unknown"))
-           $ip = getenv("HTTP_CLIENT_IP");
+               $ip = getenv("HTTP_CLIENT_IP");
        else if (getenv("HTTP_X_FORWARDED_FOR") &&
 strcasecmp(getenv("HTTP_X_FORWARDED_FOR"), "unknown"))
-           $ip = getenv("HTTP_X_FORWARDED_FOR");
+               $ip = getenv("HTTP_X_FORWARDED_FOR");
        else if (getenv("REMOTE_ADDR") && strcasecmp(getenv("REMOTE_ADDR"), "unknown"))
-           $ip = getenv("REMOTE_ADDR");
+               $ip = getenv("REMOTE_ADDR");
        else if (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] &&
 strcasecmp($_SERVER['REMOTE_ADDR'], "unknown"))
-           $ip = $_SERVER['REMOTE_ADDR'];
+               $ip = $_SERVER['REMOTE_ADDR'];
        else
-           $ip = "unknown";
+               $ip = "unknown";
        return($ip);
 }
 

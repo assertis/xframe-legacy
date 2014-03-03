@@ -5,7 +5,6 @@
 class Resource extends Record {
 
     public function __construct($name,
-                                $type,
                                 $class,
                                 $method,
                                 array $parameters = array(),
@@ -18,7 +17,6 @@ class Resource extends Record {
 
         parent::__construct($tableName, $attributes);
         $this->name = $name;
-        $this->type = $type;
         $this->class = $class;
         $this->method = $method;
         $this->parameters = $parameters;
@@ -39,7 +37,6 @@ class Resource extends Record {
         $parameters = is_array($parameters) ? $parameters : array();
 
         return new Resource($attributes["name"],
-                            $attributes["type"],
                             $attributes["class"],
                             $attributes["method"],
                             $parameters,
@@ -79,14 +76,6 @@ class Resource extends Record {
     /**
      *
      * @return mixed
-    **/
-    public function getType() {
-        return $this->type;
-    }
-
-    /**
-     *
-     * @return mixed
      */
     public function getName() {
         return $this->name;
@@ -101,10 +90,6 @@ class Resource extends Record {
 
     public function getViewTemplate() {
         return $this->view_template;
-    }
-
-    public function getKey() {
-        return Request::makeKey($this->type, $this->name);
     }
 
     /**
@@ -137,6 +122,6 @@ class Resource extends Record {
      */
     public static function getFromRequest(Request $request) {
         $resources = Dispatcher::getListeners();
-        return $resources[$request->getKey()];
+        return $resources[$request->getRequestedResource()];
     }
 }
