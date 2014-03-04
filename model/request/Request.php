@@ -142,7 +142,7 @@ class Request implements XML {
     }
 
     public static function makeKey($type, $resource) {
-        return $type . '_' . $resource;
+        return ($type == Request::GET ? $resource : $type . '_' . $resource);
     }
 
     public function getKey() {

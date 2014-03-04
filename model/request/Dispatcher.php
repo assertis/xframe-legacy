@@ -17,24 +17,39 @@ class Dispatcher {
      * @return string
      */
     public static function dispatch(Request $r) {
-        //if we have a mapping for the request
-        if (array_key_exists($r->getKey(), self::$listeners)) {
-            //return the response from the controller
-            return self::$listeners[$r->getKey()]->getController($r)->getResponse();
+        $res = self::getListener($r->getKey());
+        if ($res != NULL) {
+            return $res->getController($r)->getResponse();
         }
 
         //if we rebuild on 404, disable this for performance
         if (Registry::get("AUTO_REBUILD_REQUEST_MAP")) {
             RequestMapGenerator::buildAll(true);
 
-            //try again, in case it has just been added
-            if (array_key_exists($r->getKey(), self::$listeners)) {
-                return self::$listeners[$r->getKey()]->getController($r)->getResponse();
+            $res = self::getListener($r->getKey());
+            if ($res != NULL) {
+                return $res->getController($r)->getResponse();
             }
         }
 
         //otherwise 404 (no need to add die, execution will end anyway
         header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found");
+    }
+
+    public static function getListener($key) {
+        //if we have a mapping for the request
+        if (array_key_exists($key, self::$listeners)) {
+            //return the response from the controller
+            return self::$listeners[$key];
+        }
+
+        // try different request types
+        $key = substr($key, (strpos($key, '_') != NULL ? strpos($key, '_')+1 : 0));
+        if (array_key_exists($key, self::$listeners)) {
+            return self::$listeners[$key];
+        }
+
+        return NULL;
     }
 
     /**
