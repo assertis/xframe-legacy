@@ -26,7 +26,7 @@ class Request implements XML {
     public function __construct($requestURI,
                                 array $parameters = array(),
                                 $phpSelf = "/index.php",
-                                $requestType = Request::GET) {
+                                $requestType = '') {
 
         //get the base directory
         $baseDirectory = substr($phpSelf, 0, -10);
@@ -141,12 +141,12 @@ class Request implements XML {
         return md5($this->requestedResource . implode($this->mappedParameters) . implode(array_keys($this->mappedParameters)));
     }
 
-    public static function makeKey($type, $resource) {
-        return ($type == Request::GET ? $resource : $type . '_' . $resource);
+    public static function makeKey($resource, $type='') {
+        return ($type != '' ? $type . '_' . $resource : $resource);
     }
 
     public function getKey() {
-        return Request::makeKey($this->requestType, $this->requestedResource);
+        return Request::makeKey($this->requestedResource, $this->requestType);
     }
 
     /**
