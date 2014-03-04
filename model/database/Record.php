@@ -264,10 +264,6 @@ class Record implements XML, Transformable {
         return $this->getTransformer()->getXML($this);
     }
 
-    public function getArray() {
-        return $this->attributes;
-    }
-
     /**
      * @return The name of the database table that the record maps to.
      */
