@@ -11,6 +11,11 @@ class Request implements XML {
     private $requestedResource;
     private $parameters;
     private $mappedParameters;
+    private $requestType;
+
+    const GET = 'GET',
+          POST = 'POST',
+          DELETE = 'DELETE';
 
     /**
      *
@@ -20,7 +25,8 @@ class Request implements XML {
      */
     public function __construct($requestURI,
                                 array $parameters = array(),
-                                $phpSelf = "/index.php") {
+                                $phpSelf = "/index.php",
+                                $requestType = '') {
 
         //get the base directory
         $baseDirectory = substr($phpSelf, 0, -10);
@@ -42,6 +48,8 @@ class Request implements XML {
         $this->mappedParameters = $parameters;
         //get the $_FILES array
         $this->files = $_FILES;
+
+        $this->requestType = $requestType;
     }
 
     /**
@@ -63,6 +71,10 @@ class Request implements XML {
      */
     public function getRequestedResource() {
         return $this->requestedResource;
+    }
+
+    public function getRequestType() {
+        return $this->requestType;
     }
 
     /**
@@ -126,7 +138,15 @@ class Request implements XML {
      * Return a hash of the Request
      */
     public function hash() {
-        return md5($this->requestedResource.implode($this->mappedParameters).implode(array_keys($this->mappedParameters)));
+        return md5($this->requestedResource . implode($this->mappedParameters) . implode(array_keys($this->mappedParameters)));
+    }
+
+    public static function makeKey($resource, $type='') {
+        return ($type != '' ? $type . '_' . $resource : $resource);
+    }
+
+    public function getKey() {
+        return Request::makeKey($this->requestedResource, $this->requestType);
     }
 
     /**

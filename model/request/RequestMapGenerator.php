@@ -23,7 +23,7 @@ class RequestMapGenerator {
         //for each file in the directory
         while (($file = readdir($dh)) !== false) {
             //if it is something we want to ignore...
-            if ($file == "test" || $file == "." || $file == ".."  || $file == ".svn" || $file == "vendor") {
+            if (strpos($file, '.') === 0 || $file == "test" || $file == "vendor") {
                 continue;
             }
             //if it is a directory...
@@ -67,29 +67,48 @@ class RequestMapGenerator {
             //if it is a request handler
             if ($annotation->hasAnnotation("RequestName")) {
                 $requestName = $annotation->getAnnotation("RequestName")->value;
-                $mappedParams = $annotation->getAnnotation("RequestParams")->value == null ? array() : $annotation->getAnnotation("RequestParams")->value;
-                $cacheLength = $annotation->getAnnotation("CacheLength")->value == null ? false : $annotation->getAnnotation("CacheLength")->value;
-                $authenticator = $annotation->getAnnotation("RequestAuthenticator")->value == null ? null : $annotation->getAnnotation("RequestAuthenticator")->value;
-                $viewType = $annotation->getAnnotation("ViewType")->value == null ? Registry::get("DEFAULT_VIEW") : $annotation->getAnnotation("ViewType")->value;
-                $viewTemplate = $annotation->getAnnotation("ViewTemplate")->value == null ? null : $annotation->getAnnotation("ViewTemplate")->value;
-                $customParams = array();
-                
-                foreach ($annotation->getAllAnnotations("CustomParam") as $custom) {
-                    $customParams[$custom->name] = $custom->value;
-                }
-
-                $resource = new Resource($requestName, 
-                                         $method->class,
-                                         $method->name,
-                                         $mappedParams,
-                                         $authenticator,
-                                         $cacheLength,
-                                         $viewType,
-                                         $viewTemplate,
-                                         null,
-                                         $customParams);
-                $string .= "Dispatcher::addResource(unserialize('".serialize($resource)."'));\n";
+                $requestType = Request::GET;
             }
+            else if ($annotation->hasAnnotation("GET")) {
+                $requestName = $annotation->getAnnotation("GET")->value;
+                $requestType = Request::GET;
+            }
+            else if ($annotation->hasAnnotation("POST")) {
+                $requestName = $annotation->getAnnotation("POST")->value;
+                $requestType = Request::POST;
+            }
+            else if ($annotation->hasAnnotation("DELETE")) {
+                $requestName = $annotation->getAnnotation("DELETE")->value;
+                $requestType = Request::DELETE;
+            }
+            else {
+                continue;
+            }
+
+            $mappedParams = $annotation->getAnnotation("RequestParams")->value == null ? array() : $annotation->getAnnotation("RequestParams")->value;
+            $cacheLength = $annotation->getAnnotation("CacheLength")->value == null ? false : $annotation->getAnnotation("CacheLength")->value;
+            $authenticator = $annotation->getAnnotation("RequestAuthenticator")->value == null ? null : $annotation->getAnnotation("RequestAuthenticator")->value;
+            $viewType = $annotation->getAnnotation("ViewType")->value == null ? Registry::get("DEFAULT_VIEW") : $annotation->getAnnotation("ViewType")->value;
+            $viewTemplate = $annotation->getAnnotation("ViewTemplate")->value == null ? null : $annotation->getAnnotation("ViewTemplate")->value;
+            $customParams = array();
+            
+            foreach ($annotation->getAllAnnotations("CustomParam") as $custom) {
+                $customParams[$custom->name] = $custom->value;
+            }
+
+            $resource = new Resource($requestName, 
+                                     $requestType,
+                                     $method->class,
+                                     $method->name,
+                                     $mappedParams,
+                                     $authenticator,
+                                     $cacheLength,
+                                     $viewType,
+                                     $viewTemplate,
+                                     null,
+                                     $customParams);
+
+            $string .= "Dispatcher::addResource(unserialize('" . serialize($resource) . "'));\n";
         }
 
         return $string;
