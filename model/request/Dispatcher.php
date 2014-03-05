@@ -17,24 +17,39 @@ class Dispatcher {
      * @return string
      */
     public static function dispatch(Request $r) {
-        //if we have a mapping for the request
-        if (array_key_exists($r->getRequestedResource(), self::$listeners)) {
-            //return the response from the controller
-            return self::$listeners[$r->getRequestedResource()]->getController($r)->getResponse();
+        $res = self::getListener($r->getKey());
+        if ($res != NULL) {
+            return $res->getController($r)->getResponse();
         }
 
-        //if we rebuild on 404, disable this for performance
+        // if we rebuild on 404, disable this for performance
         if (Registry::get("AUTO_REBUILD_REQUEST_MAP")) {
             RequestMapGenerator::buildAll(true);
 
-            //try again, in case it has just been added
-            if (array_key_exists($r->getRequestedResource(), self::$listeners)) {
-                return self::$listeners[$r->getRequestedResource()]->getController($r)->getResponse();
+            $res = self::getListener($r->getKey());
+            if ($res != NULL) {
+                return $res->getController($r)->getResponse();
             }
         }
 
-        //otherwise 404 (no need to add die, execution will end anyway
-        header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+        // otherwise 404 (no need to add die, execution will end anyway
+        header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found");
+    }
+
+    public static function getListener($key) {
+        // if we have a mapping for the request
+        if (array_key_exists($key, self::$listeners)) {
+            // return the response from the controller
+            return self::$listeners[$key];
+        }
+
+        // try different request types
+        $key = substr($key, (strpos($key, '_') != NULL ? strpos($key, '_')+1 : 0));
+        if (array_key_exists($key, self::$listeners)) {
+            return self::$listeners[$key];
+        }
+
+        return NULL;
     }
 
     /**
@@ -45,14 +60,16 @@ class Dispatcher {
      * @param String $method
      * @param int $cacheLength
      * @param array $parameterMap
+     * @param String $requestType
      */
-    public static function addListener($requestName, $class, $method, $cacheLength = false, array $parameterMap = array(), $authenticator = null) {
-        self::$listeners[$requestName] = new Resource($requestName,
-                                                      $class,
-                                                      $method,
-                                                      $parameterMap,
-                                                      $authenticator,
-                                                      $cacheLength);
+    public static function addListener($requestName, $class, $method, $cacheLength = false, array $parameterMap = array(), $authenticator = null, $requestType = '') {
+        self::$listeners[Request::makeKey($requestName, $requestType)] = new Resource($requestName,
+                                                                                      $requestType,
+                                                                                      $class,
+                                                                                      $method,
+                                                                                      $parameterMap,
+                                                                                      $authenticator,
+                                                                                      $cacheLength);
     }
 
     /**
@@ -61,7 +78,7 @@ class Dispatcher {
      * @param Resource $resource
      */
     public static function addResource(Resource $resource) {
-        self::$listeners[$resource->getName()] = $resource;
+        self::$listeners[$resource->getKey()] = $resource;
     }
 
     /**
@@ -70,8 +87,8 @@ class Dispatcher {
      * @param $request Request to get the cache length for
      */
     public static function getCacheLength(Request $r) {
-        if (array_key_exists($r->getName(), self::$listeners)) {
-            return self::$listeners[$r->getName()]->getCacheLength();
+        if (array_key_exists($r->getKey(), self::$listeners)) {
+            return self::$listeners[$r->getKey()]->getCacheLength();
         }
         else {
            return false;
@@ -83,8 +100,8 @@ class Dispatcher {
      * @param array $requestName
      * @return array
      */
-    public static function getParameterMap($requestName) {
-        return array_key_exists($requestName,self::$listeners) ? self::$listeners[$requestName]->getParameterMap() : array();
+    public static function getParameterMap($requestName, $requestType) {
+        return array_key_exists(Request::makeKey($requestName, $resourceType), self::$listeners) ? self::$listeners[Request::makeKey($requestName, $requestType)]->getParameterMap() : array();
     }
 
     /**
