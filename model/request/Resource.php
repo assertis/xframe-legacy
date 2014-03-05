@@ -104,7 +104,7 @@ class Resource extends Record {
     }
 
     public function getKey() {
-        return Request::makeKey($this->type, $this->name);
+        return Request::makeKey($this->name, $this->type);
     }
 
     /**
