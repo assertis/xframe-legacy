@@ -136,7 +136,6 @@ class Resource extends Record {
      * @return Resource
      */
     public static function getFromRequest(Request $request) {
-        $resources = Dispatcher::getListeners();
-        return $resources[$request->getKey()];
+        return Dispatcher::getListener($request->getKey());
     }
 }
