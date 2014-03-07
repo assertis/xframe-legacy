@@ -111,7 +111,7 @@ class Form implements XML {
      * @param mixed $defaultValue
      */
     private function getFieldXML($fieldName, $fieldValue, $defaultValue = "") {
-        $xml = "<f-{$fieldName}>";
+        $xml = "<f-{$fieldName} name='".htmlspecialchars($fieldName)."'>";
         if (is_array($fieldValue)) {
             foreach ($fieldValue as $key => $value) {
                 $xml .= $this->getFieldXML($key, $value);
