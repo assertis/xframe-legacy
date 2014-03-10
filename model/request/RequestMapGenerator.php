@@ -16,7 +16,7 @@ class RequestMapGenerator {
      * @return string
      */
     private function buildDirectory($dir) {
-        if (!is_dir($dir) || false === ($dh = opendir($dir))) {
+        if (!is_dir($dir) || false === ($dh = opendir($dir)) || file_exists($dir.'/.ignore')) {
             return;
         }
 
@@ -67,7 +67,7 @@ class RequestMapGenerator {
             //if it is a request handler
             if ($annotation->hasAnnotation("RequestName")) {
                 $requestName = $annotation->getAnnotation("RequestName")->value;
-                $requestType = Request::GET;
+                $requestType = '';
             }
             else if ($annotation->hasAnnotation("GET")) {
                 $requestName = $annotation->getAnnotation("GET")->value;
