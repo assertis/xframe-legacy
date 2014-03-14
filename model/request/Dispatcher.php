@@ -45,7 +45,7 @@ class Dispatcher {
 
         // try different request types
         $key = substr($key, (strpos($key, '_') != NULL ? strpos($key, '_')+1 : 0));
-        if (array_key_exists($key, self::$listeners)) {
+        if (is_string($key) && array_key_exists($key, self::$listeners)) {
             return self::$listeners[$key];
         }
 
