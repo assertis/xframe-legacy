@@ -19,6 +19,16 @@ class InputValidator {
     }
 
     /**
+     * Validate the given string to see if it is valid photocard number
+     * 
+     * @param $number string photocard number to validate
+     */ 
+    public static function isPhotocardNumber($number) {
+        $pattern = '/^(\w{7,8})$/';
+        return preg_match($pattern, $number);
+    }    
+
+    /**
      * checks to see if the given string is greater than or
      * less than the given length
      *
