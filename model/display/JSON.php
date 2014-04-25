@@ -76,7 +76,6 @@ class JSON extends View {
     }
 
     public function setException(FrameEx $ex) {
-        $this->setStatusCode(400);
         $this->ex = $ex;
     }
 
