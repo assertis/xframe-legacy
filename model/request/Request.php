@@ -15,7 +15,8 @@ class Request implements XML {
 
     const GET = 'GET',
           POST = 'POST',
-          DELETE = 'DELETE';
+          DELETE = 'DELETE',
+          PUT = 'PUT';
 
     /**
      *

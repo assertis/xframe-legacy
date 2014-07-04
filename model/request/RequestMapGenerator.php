@@ -81,6 +81,10 @@ class RequestMapGenerator {
                 $requestName = $annotation->getAnnotation("DELETE")->value;
                 $requestType = Request::DELETE;
             }
+            else if ($annotation->hasAnnotation("PUT")) {
+                $requestName = $annotation->getAnnotation("PUT")->value;
+                $requestType = Request::PUT;
+            }
             else {
                 continue;
             }
