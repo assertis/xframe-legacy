@@ -8,9 +8,6 @@
 
 require(dirname(__FILE__).'/../init.php');
 
-parse_str(file_get_contents("php://input"), $_PUT);
-$_REQUEST = array_merge($_REQUEST, $_PUT);
-
 //pass the request URI, parameters and path of this file to the request
 parse_str(file_get_contents("php://input"), $_PUT);
 $_REQUEST = array_merge($_REQUEST, $_PUT);
