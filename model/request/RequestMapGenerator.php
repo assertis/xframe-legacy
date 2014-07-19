@@ -138,6 +138,11 @@ class RequestMapGenerator {
             throw $up;
         }
 
+        try {
+            chmod($filename, 0777);
+        }
+        catch (FrameEx $ex) { /* we tried */ }
+
         return $filename;
     }
 

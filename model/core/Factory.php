@@ -17,6 +17,7 @@
     private static $loadedPackages = array();
     private static $tmp;
     private static $fileTypes = array(".php", ".php4", ".php5", ".mphp", ".phpm"); //allowed file types
+    private static $autoloader;
 
     /** include the class do not create the object */
     public static function includeFile($className) {
@@ -29,6 +30,15 @@
         }
 
         return false;
+    }
+
+    /**
+     * Piggy back the namespace autoloader
+     * 
+     * @param model\core\Autloader $loader
+     */
+    public static function attachAutoloader(model\core\Autoloader $loader) {
+        self::$autoloader = $loader;
     }
 
     /**
@@ -213,6 +223,9 @@
             include($tmpPath.".request-map.php");
         }
 
+        if (self::$autoloader) {
+            self::$autoloader->addPath(realpath($package.DIRECTORY_SEPARATOR));
+        }
 
         self::$loadedPackages[] = $package;
     }
