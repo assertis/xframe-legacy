@@ -68,13 +68,22 @@ class InputValidator {
     }
 
     /**
-     * Check if $input is string hashed by our hasher
+     * Check if $input is string hashed by our hash methods
      *
      * @param $input
      * @return int
      */
+    public static function isPasswordSalted($input) {
+        return preg_match("/^[a-f0-9]{64}$/", strtolower($input));
+    }
+
+    /**
+     * Check if $input is salt
+     * @param $input
+     * @return int
+     */
     public static function isSaltPassword($input) {
-        return preg_match("/^[a-f0-9]{64}:[a-f0-9]{32}$/", strtolower($input));
+        return preg_match("/^[a-f0-9]{32}$/", strtolower($input));
     }
 
     /**

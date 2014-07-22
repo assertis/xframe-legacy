@@ -5,17 +5,15 @@
  */
 class DbAuth implements AuthenticationAdapter {
 
-    const SALT_NAME = "salt_";
-
     private $authorisedId;
     private $identity;
     private $credential;
-    private $saltCredential;
-    private $originalCredential;
-    private $saltExists = true;
+    private $hash;
     private $table;
     private $identityColumn;
     private $credentialColumn;
+    private $slatedCredentialColumn;
+    private $credentialSaltColumn;
     private $identityKey;
 
     /**
@@ -23,15 +21,21 @@ class DbAuth implements AuthenticationAdapter {
      * @param string $table The table we are going to query form the authorisation
      * @param string $identityColumn The returned column name that will give us the instance identity
      * @param string $credentialColumn
+     * @param string $slatedCredentialColumn
+     * @param string $credentialSaltColumn
      * @param string $identityKey
      */
     public function __construct($table,
                                 $identityColumn,
                                 $credentialColumn,
-                                $identityKey){
+                                $identityKey,
+                                $slatedCredentialColumn = null,
+                                $credentialSaltColumn = null) {
         $this->table = $table;
         $this->identityColumn = $identityColumn;
         $this->credentialColumn = $credentialColumn;
+        $this->slatedCredentialColumn = $slatedCredentialColumn;
+        $this->credentialSaltColumn = $credentialSaltColumn;
         $this->identityKey = $identityKey;
     }
 
@@ -62,36 +66,9 @@ class DbAuth implements AuthenticationAdapter {
      * @return DbAuth
      */
     public function setCredential($credential, $hash = true) {
-        $this->originalCredential = $credential;
-        if ($hash) {
-            $credential = sha1($credential);
-        }
-
-        //Move after if for auto login
-        $this->saltCredential = self::hashWithSalt($credential);
-
         $this->credential = $credential;
+        $this->hash = $hash;
         return $this;
-    }
-
-    /**
-     * Method hash password with generating salt
-     * @param $password
-     * @return string
-     */
-    public static function hashWithSalt($password) {
-        $salt = md5(uniqid(mt_rand(), true));
-        return self::hashPassword($password, $salt);
-    }
-
-    /**
-     * Method hash password using salt
-     * @param $password
-     * @param $salt
-     * @return string
-     */
-    public static function hashPassword($password, $salt) {
-        return hash('sha256', $password . $salt) . ":" . $salt;
     }
 
     /**
@@ -113,68 +90,72 @@ class DbAuth implements AuthenticationAdapter {
         $identity = $this->getIdentity();
 
         Assert::isNotEmpty($identity, "You must set an username before authentication");
-        //We check first if we have record with password that is salt_password
-        $records = $this->checkWithSalt();
-        //If we get null it means we don't have salt_password or password was incorrect
-        if (empty($records)) {
-            $criteria = new Criteria(Restriction::is($this->credentialColumn, $credential));
-            $criteria->addAnd(Restriction::is($this->identityColumn, $identity));
-            $records = TableGateway::loadMatching($this->table, $criteria);
-        }
+
+        //We first get user from db if its exists
+        $criteria = new Criteria(Restriction::is($this->identityColumn, $identity));
+        $records = TableGateway::loadMatching($this->table, $criteria);
 
         if ($records->count() == 0) {
             return false;
         }
 
-        if ($this->saltExists) {
-            $this->addSalt();
+        /** @var $user Customer */
+        $user = $records->current();
+        //Yes we need to reassign this to variable.
+        $credentialColumn = $this->credentialColumn;
+        $credentialSaltColumn = $this->credentialSaltColumn;
+        $slatedCredentialColumn = $this->slatedCredentialColumn;
+
+        //We check if we should use salt checking
+        if (!empty($credentialSaltColumn) && !empty($slatedCredentialColumn) &&
+            !empty($user->$credentialSaltColumn) && !empty($user->$slatedCredentialColumn)
+        ) {
+            //Fo salt we check if password is same like credential
+            $authenticated = SaltPasswordManager::checkPasswordWithHash(
+                $user->$slatedCredentialColumn,
+                $user->$credentialSaltColumn,
+                $this->credential
+            );
+        } else {
+
+            //If don't have salt we must check if we have hashed password
+            if ($this->hash) {
+                $credential = SaltPasswordManager::generateSimpleHash($this->credential);
+            } else {
+                $credential = $this->credential;
+            }
+
+            //We check if we are authenticated
+            $authenticated = $credential == $user->$credentialColumn;
+
+            /**
+             * If we are authenticated and have original password, we can create and add slated password for user and
+             * we should do it. It means we are not Auto Login or something.
+             */
+            if ($authenticated && $this->hash) {
+                if (!empty($credentialSaltColumn) && !empty($slatedCredentialColumn)) {
+                    list($password, $hash) = SaltPasswordManager::generateSaltedPassword($this->credential);
+                    $this->addSalt($user, $password, $hash);
+                }
+            }
+        }
+
+        if (empty($authenticated)) {
+            return false;
         }
 
         return $this->authorisedId = $records->current()->__get($this->identityKey);
     }
 
     /**
-     * Method check if we have password with salt
-     * @return null|Results
-     */
-    private function checkWithSalt() {
-        try {
-            $criteria = new Criteria(Restriction::is($this->identityColumn, $this->getIdentity()));
-            $records = TableGateway::loadMatching($this->table, $criteria);
-            if ($records->count() > 0) {
-                if (self::authenticateSalt($records->current()->__get(self::SALT_NAME . $this->credentialColumn), $this->originalCredential)) {
-                    return $records;
-                };
-            }
-        } catch (FrameEx $e) {
-            $this->saltExists = false;
-        }
-        return null;
-    }
-
-    /**
      * Add salt password to model
      */
-    private function addSalt() {
-        $criteria = new Criteria(Restriction::is($this->identityColumn, $this->getIdentity()));
-        $records = TableGateway::loadMatching($this->table, $criteria);
-        $record = $records->current();
-        $record->__set(self::SALT_NAME . $this->credentialColumn, $this->saltCredential);
-        $record->__set($this->credentialColumn, "PASSWORD");
+    private function addSalt(Record $record, $password, $salt) {
+        $record->__set($this->credentialColumn, null);
+        $record->__set($this->credentialSaltColumn, $salt);
+        $record->__set($this->slatedCredentialColumn, $password);
         $record->save();
     }
-
-    /**
-     * Method check if password is same with $credential
-     * @param $password
-     * @param $credential
-     * @return bool
-     */
-    public static function authenticateSalt($password, $credential) {
-        list($psw, $salt) = explode(":", $password);
-        return $password == self::hashPassword($credential, $salt);
-    }
-
 
     /**
      * Determines whether the authorisation atempt produced a valid result
