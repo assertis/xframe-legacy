@@ -29,12 +29,8 @@ class FrameEx extends Exception {
                                 $code = 0,
                                 $severity = self::HIGH,
                                 Exception $previous = null) {
-        if (version_compare(PHP_VERSION, '5.3.0') >= 0) {
-            parent::__construct($message, (int) $code, $previous);
-        }
-        else {
-            parent::__construct($message, (int) $code);
-        }
+        
+        parent::__construct($message, (int) $code, $previous);
         $this->severity = $severity;
     }
 
