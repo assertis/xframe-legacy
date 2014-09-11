@@ -245,6 +245,36 @@ class FrameEx extends Exception {
         throw new FrameEx($error.": ".$msg." (line {$line} of ".basename($filename).")");
     }
 
+    // TODO: temp fatal error catching
+    public static function fatalHandler() {
+        $error = error_get_last();
+        if ($error !== null) {
+            $errno   = $error['type'];
+            $errfile = $error['file'];
+            $errline = $error['line'];
+            $errstr  = $error['message'];
+
+            mail(Registry::get('ADMIN'),
+                substr($errstr, 0, 30),
+                self::formatError($errno, $errstr, $errfile, $errline)
+            );
+        }
+    }
+
+    // TODO: temp fatal error catching
+    public static function formatError($errno, $errstr, $errfile, $errline) {
+        $trace = print_r(debug_backtrace(false), true);
+
+        $content  = "<table><thead bgcolor='#c8c8c8'><th>Item</th><th>Description</th></thead><tbody>";
+        $content .= "<tr valign='top'><td><b>Error</b></td><td><pre>$errstr</pre></td></tr>";
+        $content .= "<tr valign='top'><td><b>Errno</b></td><td><pre>$errno</pre></td></tr>";
+        $content .= "<tr valign='top'><td><b>File</b></td><td>$errfile</td></tr>";
+        $content .= "<tr valign='top'><td><b>Line</b></td><td>$errline</td></tr>";
+        $content .= "<tr valign='top'><td><b>Trace</b></td><td><pre>$trace</pre></td></tr>";
+        $content .= '</tbody></table>';
+
+        return $content;
+    }
 
     /**
      * If an exception is thrown that is not in a try catch statement it comes
@@ -278,6 +308,7 @@ class FrameEx extends Exception {
     public static function init() {
         set_exception_handler(array("FrameEx", "exceptionHandler"));
         set_error_handler(array("FrameEx", "errorHandler"), ini_get("error_reporting"));
+        register_shutdown_function(array("FrameEx", "fatalHandler"));
     }
 
     public function getIP() {
@@ -295,6 +326,6 @@ strcasecmp($_SERVER['REMOTE_ADDR'], "unknown"))
        else
            $ip = "unknown";
        return($ip);
-}
+    }
 
 }
