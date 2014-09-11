@@ -252,7 +252,7 @@ class FrameEx extends Exception {
     // TODO: temp fatal error catching
     public static function fatalHandler() {
         $error = error_get_last();
-        if ($error !== null) {
+        if ($error['type'] === E_ERROR || $error['type'] === E_PARSE) {
             $errno   = $error['type'];
             $errfile = $error['file'];
             $errline = $error['line'];
