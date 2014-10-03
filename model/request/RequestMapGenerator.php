@@ -154,7 +154,7 @@ class RequestMapGenerator {
         $generator = new RequestMapGenerator();
 
         foreach (Factory::getLoadedPackages() as $package) {
-            $contents = $generator->buildDirectory($package);
+            $contents = $generator->buildDirectory($package.'/controller/');
             $filename = self::writeRequestMap($package, $contents);
 
             if ($include) {
@@ -169,7 +169,7 @@ class RequestMapGenerator {
      */
     public static function build($package) {
         $generator = new RequestMapGenerator();
-        $contents = $generator->buildDirectory($package);
+        $contents = $generator->buildDirectory($package.'/controller/');
         self::writeRequestMap($package, $contents);
     }
 }
