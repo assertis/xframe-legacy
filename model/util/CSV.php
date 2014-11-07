@@ -138,4 +138,10 @@ class CSV {
             throw new FrameEx("Unable to write CSV file to: ".$file);
         }
     }
+
+    public function appendToFile($file) {
+        if (!file_put_contents($file, $this->build(), FILE_TEXT | FILE_APPEND)) {
+            throw new FrameEx("Unable to write CSV file to: ".$file);
+        }
+    }
 }
