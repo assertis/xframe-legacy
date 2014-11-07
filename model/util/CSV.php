@@ -17,7 +17,7 @@ class CSV {
      * @param string $separator
      * @param string $newLine
      * @param string $quote
-     * @param string $escape
+     * @param bool $escape
      */
     public function __construct($separator = ",",
                                 $newLine = "\n",
@@ -37,6 +37,7 @@ class CSV {
      * @param int $minLength
      * @param int $maxLength
      * @param boolean $truncate is true do not throw exception for max length problems, truncate instead
+     * @throws FrameEx
      */
     public function add($value, $minLength = null, $maxLength = null, $truncate = false) {
         //validate the minimum length
@@ -64,8 +65,10 @@ class CSV {
      *
      * @param string $value
      * @param int $length
-     * @param int $pad
+     * @param string $pad
      * @param int $direction
+     * @param bool $truncate
+     * @throws FrameEx
      */
     public function addPadded($value, $length, $pad = " ", $direction = STR_PAD_RIGHT, $truncate = false) {
         $this->add(str_pad($value, $length, $pad, $direction), $length, $length, $truncate);
@@ -75,8 +78,10 @@ class CSV {
      *
      * @param string $value
      * @param int $length
-     * @param int $pad
+     * @param string $pad
      * @param int $direction
+     * @param bool $truncate
+     * @throws FrameEx
      */
     public function addNumericPadded($value, $length, $pad = "0", $direction = STR_PAD_LEFT, $truncate = false) {
         $this->add(str_pad($value, $length, $pad, $direction), $length, $length, $truncate);
@@ -84,7 +89,7 @@ class CSV {
 
     /**
      * Add a whole line to the csv
-     * @param arary $line
+     * @param array $line
      */
     public function addLine(array $line) {
         foreach ($line as $field) {
@@ -126,6 +131,7 @@ class CSV {
     /**
      * Write the CSV to a file
      * @param string $file
+     * @throws FrameEx
      */
     public function writeToFile($file) {
         if (!file_put_contents($file, $this->build(), FILE_TEXT)) {
