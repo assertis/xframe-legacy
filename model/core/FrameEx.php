@@ -264,8 +264,8 @@ class FrameEx extends Exception {
     // TODO: temp fatal error catching
     public static function formatError($errno, $errstr, $errfile, $errline) {
         $trace = print_r(debug_backtrace(false), true);
-        
-        $content .= "Error: {$errstr}\n";
+
+        $content = "Error: {$errstr}\n";
         $content .= "Errno:{$errno}\n";
         $content .= "File: {$errfile}\n";
         $content .= "Line: {$errline}\n";
