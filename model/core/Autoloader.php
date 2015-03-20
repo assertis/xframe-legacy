@@ -58,8 +58,8 @@ class Autoloader {
     public function loader($class) {
         $filename = str_replace(array('\\', '_'), DIRECTORY_SEPARATOR, $class);
 
-        if (stream_resolve_include_path($filename.$this->classExtension)) {
-            include $filename.$this->classExtension;            
+        if (is_file($filename.$this->classExtension)) {
+            include $filename.$this->classExtension;
         }
 
         return false;

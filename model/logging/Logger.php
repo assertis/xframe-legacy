@@ -1,4 +1,7 @@
 <?php
+use Monolog\Formatter\LogstashFormatter;
+use Monolog\Handler\RedisHandler;
+use Monolog\Logger as MonologLogger;
 
 /**
  * @author Linus Norton <linus.norton@assertis.co.uk>, Jason Paige <jason.paige@assertis.co.uk>
@@ -14,11 +17,65 @@ class Logger {
     private $tableName;
     private $logLevel;
     private $logFile;
+    /**
+     * @var MonologLogger
+     */
+    private $client;
+
+    private static $loggerToMonologCodes = [
+        self::DEBUG => MonologLogger::DEBUG,
+        self::INFO => MonologLogger::INFO,
+        self::WARN => MonologLogger::WARNING,
+        self::ERROR => MonologLogger::ERROR,
+        self::AUDIT => MonologLogger::ERROR,
+        self::FATAL => MonologLogger::CRITICAL,
+    ];
+
+    private static $codeNamesToMonologCode = [
+        'debug' => MonologLogger::DEBUG,
+        'info' => MonologLogger::INFO,
+        'warning' => MonologLogger::WARNING,
+        'error' => MonologLogger::ERROR,
+        'audit' => MonologLogger::ERROR,
+        'fatal' => MonologLogger::CRITICAL,
+    ];
 
     public function __construct($key) {
         $this->key = $key;
         $this->tableName = (Registry::get("LOG_TABLE")) ? Registry::get("LOG_TABLE") : "log";
-        $this->logLevel = (Registry::get("LOG_LEVEL")) ? Registry::get("LOG_LEVEL") : self::OFF;
+
+        $systemName = (Registry::get("RESOURCE_SITE")) ? Registry::get("RESOURCE_SITE") : "XFRAME";
+        $applicationName = (Registry::get("DATABASE_NAME")) ? Registry::get("DATABASE_NAME") : null;
+        $logStashKey = (Registry::get("LOG_TABLE")) ? Registry::get("LOG_TABLE") : "log";
+
+        $logLevel = (Registry::get("LOG_LEVEL")) ? Registry::get("LOG_LEVEL") : self::OFF;
+        $this->logLevel = $logLevel;
+
+        $redisHost = (Registry::get("REDIS_HOST")) ? Registry::get("REDIS_HOST") : '127.0.0.1';
+        $redisPort = (Registry::get("REDIS_PORT")) ? Registry::get("REDIS_PORT") : 6379;
+        $redisTimeout = (Registry::get("REDIS_TIMEOUT")) ? Registry::get("REDIS_TIMEOUT") : 0.0;
+
+        $this->client = new MonologLogger($key);
+        $redis = new Redis();
+        $redis->connect($redisHost, $redisPort, $redisTimeout);
+        $handler = new RedisHandler($redis, $logStashKey, self::getCode($logLevel, self::$loggerToMonologCodes));
+        $handler->setFormatter(new LogstashFormatter($applicationName, $systemName, null, "_", LogstashFormatter::V1));
+        $this->client->pushHandler($handler);
+    }
+
+    /**
+     * Return codes
+     *
+     * @param $nameOrCode
+     * @param array $codes
+     * @return int
+     */
+    private static function getCode($nameOrCode, array $codes) {
+        if (isset($codes[$nameOrCode])) {
+            return $codes[$nameOrCode];
+        }
+
+        return MonologLogger::INFO;
     }
 
     /**
@@ -82,6 +139,9 @@ class Logger {
     }
 
     private function log($level, $message) {
+        //Log to logstash
+        $this->client->log(self::getCode($level, self::$codeNamesToMonologCode), $message);
+
         if ($this->logFile != null) {
             $this->logTofile($message);
         }
@@ -95,7 +155,7 @@ class Logger {
         if ($fp) {
             fwrite($fp, $message."\n");
             fclose($fp);
-            @chmod($this->logFile, 0775); 
+            @chmod($this->logFile, 0775);
         }
     }
 
