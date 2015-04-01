@@ -1,0 +1,19 @@
+{
+    "name": "assertis/xframe",
+    "description": "Legacy MVC Framework",
+    "license": "Apache v2",
+    "version": "1.0.0",
+    "authors": [
+        {
+            "name": "Assertis",
+            "email": "linus.norton@assertis.co.uk"
+        }
+    ],
+    "repositories": {
+        "type": "vcs",
+        "url": "http://github.com/assertis/xframe-legacy.git"
+    },    
+    "require": {
+        "php": ">5.3.3"
+    }
+}
