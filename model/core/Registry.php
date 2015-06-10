@@ -44,9 +44,9 @@ class Registry {
      *
      * @param $get mixed key of variable get from the registry
      */
-    public static function get($key) {
+    public static function get($key, $default=null) {
         if (!isset(self::$settings[$key])) {
-            return null;
+            return $default;
         }
 
         return self::$settings[$key];
