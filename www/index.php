@@ -15,6 +15,9 @@ define('XFRAME_ORIGINAL_PHP_INPUT', file_get_contents('php://input'));
 parse_str(XFRAME_ORIGINAL_PHP_INPUT, $_PUT);
 $_REQUEST = array_merge($_REQUEST, $_PUT);
 
-$request = new Request($_SERVER['REQUEST_URI'], $_REQUEST, $_SERVER['PHP_SELF'], $_SERVER['REQUEST_METHOD']);
+// Use the URL from mod_rewrite if it exists
+$url = isset($_SERVER['REDIRECT_URL'])? $_SERVER['REDIRECT_URL']: $_SERVER['REQUEST_URI'];
+
+$request = new Request($url, $_REQUEST, $_SERVER['PHP_SELF'], $_SERVER['REQUEST_METHOD']);
 //pass request to the dispatcher which maps it to a resource and controller 
 echo Dispatcher::dispatch($request);
