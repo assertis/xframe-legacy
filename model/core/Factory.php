@@ -207,7 +207,7 @@
 
         //boot
         try {
-            include_once($package.DIRECTORY_SEPARATOR."init.php");
+            include_once(realpath($package.DIRECTORY_SEPARATOR."init.php"));
         }
         catch (FrameEx $ex) {
             $ex->setMessage("Unable to boot package: {$package}: ".$ex->getMessage());
