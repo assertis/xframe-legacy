@@ -39,6 +39,10 @@ class Logger {
      * @param string $fileName
      */
     public function setLogFile($fileName) {
+        if (!file_exists(dirname($fileName))) {
+            mkdir(dirname($fileName), 0777, true);
+        }
+
         $this->logFile = $fileName;
     }
 
