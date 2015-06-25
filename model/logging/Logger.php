@@ -39,7 +39,7 @@ class Logger {
      * @param string $fileName
      */
     public function setLogFile($fileName) {
-        if (!file_exists(dirname($fileName))) {
+        if (!is_dir(dirname($fileName))) {
             mkdir(dirname($fileName), 0777, true);
         }
 
