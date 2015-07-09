@@ -59,8 +59,9 @@ class FrameEx extends Exception {
      * @return string
      */
     private function getLocation() {
-        $location = "{$_SERVER['SERVER_NAME']}{$_SERVER['REQUEST_URI']}";
-        return $location? "{$_SERVER['REQUEST_SCHEME']}://{$location}": $_SERVER['SCRIPT_FILENAME'];
+        return empty($_SERVER['REQUEST_URI'])?
+            $_SERVER['SCRIPT_FILENAME']:
+            $_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'];
     }
 
     /**
