@@ -70,7 +70,6 @@ class FrameEx extends Exception {
     protected function log() {
         error_log($_SERVER["REQUEST_URI"].": ".$this->message);
         LoggerManager::getLogger("Exception")->error($this->message, [
-            'exception' => $this,
             'file' => $this->getFile(),
             'line' => $this->getLine(),
             'location' => $this->getLocation()
