@@ -141,7 +141,7 @@ class Logger {
     }
 
     /**
-     * @param int $level
+     * @param string $level
      * @param string $message
      * @param array $context
      */
@@ -164,12 +164,12 @@ class Logger {
      */
     private function getSyslogLevel($level) {
         switch ($level) {
-            case self::DEBUG: return LOG_DEBUG;
-            case self::INFO: return LOG_INFO;
-            case self::WARN: return LOG_WARNING;
-            case self::AUDIT: return LOG_NOTICE;
-            case self::ERROR: return LOG_ERR;
-            case self::FATAL: return LOG_CRIT;
+            case self::DEBUG: case 'debug': return LOG_DEBUG;
+            case self::INFO: case 'info': return LOG_INFO;
+            case self::AUDIT: case 'audit': return LOG_INFO;
+            case self::WARN: case 'warn': return LOG_WARNING;
+            case self::ERROR: case 'error': return LOG_ERR;
+            case self::FATAL: case 'fatal': return LOG_CRIT;
             default: return LOG_ERR;
         }
     }
@@ -180,13 +180,13 @@ class Logger {
      */
     private function getSyslogLevelName($level) {
         switch ($level) {
-            case self::DEBUG: return 'DEBUG';
-            case self::INFO: return 'INFO';
-            case self::WARN: return 'WARNING';
-            case self::AUDIT: return 'NOTICE';
-            case self::ERROR: return 'ERROR';
-            case self::FATAL: return 'CRITICAL';
-            default: return 'ERROR';
+            case LOG_DEBUG: return 'DEBUG';
+            case LOG_INFO: return 'INFO';
+            case LOG_WARNING: return 'WARNING';
+            case LOG_NOTICE: return 'NOTICE';
+            case LOG_ERR: return 'ERROR';
+            case LOG_CRIT: return 'CRITICAL';
+            default: return '-';
         }
     }
 
@@ -196,10 +196,18 @@ class Logger {
      * @param array $context
      */
     private function logToSyslog($xframeLevel, $message, array $context = []) {
-        $levelName = $this->getSyslogLevelName($xframeLevel);
-        $message = $this->interpolateMessage("<{$levelName}> {$message} at {file}:{line} in {location}", $context);
+        $level = $this->getSyslogLevel($xframeLevel);
+        $levelName = $this->getSyslogLevelName($level);
+
+        if ($level > LOG_NOTICE) return;
+
+        $message = "<{$levelName}> {$message}";
+        if (isset($context['location'])) {
+            $message = $this->interpolateMessage($message." at {file}:{line} in {location}", $context);
+        }
+
         openlog($this->syslogId, LOG_PID | LOG_NDELAY, LOG_USER);
-        syslog($this->getSyslogLevel($xframeLevel), $message);
+        syslog($level, $message);
         closelog();
     }
 
