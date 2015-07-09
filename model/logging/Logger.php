@@ -15,10 +15,27 @@ class Logger {
     private $logLevel;
     private $logFile;
 
+    private $syslogId;
+
     public function __construct($key) {
         $this->key = $key;
         $this->tableName = (Registry::get("LOG_TABLE")) ? Registry::get("LOG_TABLE") : "log";
         $this->logLevel = (Registry::get("LOG_LEVEL")) ? Registry::get("LOG_LEVEL") : self::OFF;
+        $this->syslogId = $this->getSyslogId();
+    }
+
+    /**
+     * @return string
+     */
+    private function getSyslogId() {
+        $id = Registry::get('LOG_ID');
+        if (!$id) {
+            $id = array_pop(array_filter(explode('/', Registry::get('APP_DIR'))));
+        }
+        if (!$id) {
+            $id = 'xframe_app';
+        }
+        return "assertis.{$id}";
     }
 
     /**
@@ -48,50 +65,142 @@ class Logger {
 
     /**
      * Log a debug message (dependant on the level of logging)
+     * @param string $message
+     * @param array $context
      */
-    public function debug($message) {
+    public function debug($message, array $context = []) {
         if ($this->logLevel >= self::DEBUG){
-            $this->log("debug", $message);
+            $this->log("debug", $message, $context);
         }
     }
 
-    public function info($message) {
+    /**
+     * @param string $message
+     * @param array $context
+     */
+    public function info($message, array $context = []) {
         if ($this->logLevel >= self::INFO){
-            $this->log("info", $message);
+            $this->log("info", $message, $context);
         }
     }
 
-    public function warn($message) {
+    /**
+     * @param string $message
+     * @param array $context
+     */
+    public function warn($message, array $context = []) {
         if ($this->logLevel >= self::WARN){
-            $this->log("warn", $message);
+            $this->log("warn", $message, $context);
         }
     }
 
-    public function audit($message) {
+    /**
+     * @param string $message
+     * @param array $context
+     */
+    public function audit($message, array $context = []) {
         if ($this->logLevel >= self::AUDIT){
-            $this->log("audit", $message);
+            $this->log("audit", $message, $context);
         }
     }
 
-    public function error($message) {
+    /**
+     * @param string $message
+     * @param array $context
+     */
+    public function error($message, array $context = []) {
         if ($this->logLevel >= self::ERROR){
-            $this->log("error", $message);
+            $this->log("error", $message, $context);
         }
     }
 
-    public function fatal($message) {
+    /**
+     * @param string $message
+     * @param array $context
+     */
+    public function fatal($message, array $context = []) {
         if ($this->logLevel >= self::FATAL){
-            $this->log("fatal", $message);
+            $this->log("fatal", $message, $context);
         }
     }
 
-    private function log($level, $message) {
+    /**
+     * @param string $message
+     * @param array $context
+     * @return string
+     */
+    private function interpolateMessage($message, array $context = []) {
+        // build a replacement array with braces around the context keys
+        $replace = [];
+        foreach ($context as $key => $val) {
+            $replace['{' . $key . '}'] = $val;
+        }
+
+        // interpolate replacement values into the message and return
+        return strtr($message, $replace);
+    }
+
+    /**
+     * @param int $level
+     * @param string $message
+     * @param array $context
+     */
+    private function log($level, $message, array $context = []) {
+        $message = $this->interpolateMessage($message, $context);
+
+        $this->logToSyslog($level, $message, $context);
+
         if ($this->logFile != null) {
             $this->logTofile($message);
         }
         else {
             $this->logToDatabase($level, $message);
         }
+    }
+
+    /**
+     * @param int $level
+     * @return int
+     */
+    private function getSyslogLevel($level) {
+        switch ($level) {
+            case self::DEBUG: return LOG_DEBUG;
+            case self::INFO: return LOG_INFO;
+            case self::WARN: return LOG_WARNING;
+            case self::AUDIT: return LOG_NOTICE;
+            case self::ERROR: return LOG_ERR;
+            case self::FATAL: return LOG_CRIT;
+            default: return LOG_ERR;
+        }
+    }
+
+    /**
+     * @param int $level
+     * @return string
+     */
+    private function getSyslogLevelName($level) {
+        switch ($level) {
+            case self::DEBUG: return 'DEBUG';
+            case self::INFO: return 'INFO';
+            case self::WARN: return 'WARNING';
+            case self::AUDIT: return 'NOTICE';
+            case self::ERROR: return 'ERROR';
+            case self::FATAL: return 'CRITICAL';
+            default: return 'ERROR';
+        }
+    }
+
+    /**
+     * @param int $xframeLevel
+     * @param string $message
+     * @param array $context
+     */
+    private function logToSyslog($xframeLevel, $message, array $context = []) {
+        $levelName = $this->getSyslogLevelName($xframeLevel);
+        $message = $this->interpolateMessage("<{$levelName}> {$message} at {file}:{line} in {location}", $context);
+        openlog($this->syslogId, LOG_PID | LOG_NDELAY, LOG_USER);
+        syslog($this->getSyslogLevel($xframeLevel), $message);
+        closelog();
     }
 
     private function logToFile($message) {
@@ -131,7 +240,7 @@ class Logger {
         $log->execution_time = number_format(microtime(true) - Controller::getExecutionTime(), 5);
 
         // Log wihtout transaction.
-        $saveGraph = array();
+        $saveGraph = [];
         $log->save(false, $saveGraph, false);
     }
 
