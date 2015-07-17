@@ -28,7 +28,7 @@ class XSLTView extends View {
         parent::__construct(APP_DIR.DIRECTORY_SEPARATOR.$viewDirectory.DIRECTORY_SEPARATOR, $viewExtension);
 
         $this->outputMode = self::OUTPUT_XSL;
-        $this->staticIncludeDirectory = APP_DIR.DIRECTORY_SEPARATOR.$staticIncludeDirectory.DIRECTORY_SEPARATOR;
+        $this->staticIncludeDirectory = realpath(APP_DIR.DIRECTORY_SEPARATOR.$staticIncludeDirectory).DIRECTORY_SEPARATOR;
         $this->staticIncludeExtension = $staticIncludeExtension;
         $this->data = "";
         $this->staticIncludes = array();
