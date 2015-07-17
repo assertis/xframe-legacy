@@ -18,7 +18,7 @@ class Transformation implements XML {
      * @param string $xslFile
      */
     public function __construct($xml, $xslFile = null) {
-        $this->xml = self::generateXMLDom($xml);
+        $this->xml = self::generateXMLDom($xml, $xslFile);
 
         if ($xslFile != null) {
             $this->xsl = self::generateXSLDom($xslFile);
@@ -54,11 +54,17 @@ class Transformation implements XML {
 
     /**
      * Take the given $xml and turn it into a DomDocument and do the xincludes
+     *
      * @param string $xml
+     * @param string $xmlFilePath
+     *
      * @return DomDocument
      */
-    private function generateXMLDom($xml) {
+    private function generateXMLDom($xml, $xmlFilePath = null) {
         $dom = new DomDocument();
+        if (null !== $xmlFilePath) {
+            $dom->documentURI = $xmlFilePath;
+        }
         try {
             $dom->loadXML($xml);
         }
