@@ -56,11 +56,24 @@ class FrameEx extends Exception {
     }
 
     /**
+     * @return string
+     */
+    private function getLocation() {
+        return empty($_SERVER['REQUEST_URI'])?
+            $_SERVER['SCRIPT_FILENAME']:
+            $_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'];
+    }
+
+    /**
      * Log using the error_log and LoggerManager
      */
     protected function log() {
         error_log($_SERVER["REQUEST_URI"].": ".$this->message);
-        LoggerManager::getLogger("Exception")->error($this->message);
+        LoggerManager::getLogger("Exception")->error($this->message, [
+            'file' => $this->getFile(),
+            'line' => $this->getLine(),
+            'location' => $this->getLocation()
+        ]);
     }
 
     /**
@@ -91,14 +104,10 @@ class FrameEx extends Exception {
      * Get the XML for this exception
      */
     public function getXML() {
-        $location = "".$_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"];
-        if ($location == ""){
-            $location = "". $_SERVER["SCRIPT_FILENAME"];
-        }
         $out = "<exception>";
         $out .= "<message>".htmlspecialchars($this->message, ENT_COMPAT, "UTF-8", false)."</message>";
         $out .= "<code>".htmlspecialchars($this->code, ENT_COMPAT, "UTF-8", false)."</code>";
-        $out .= "<location>".htmlspecialchars($location, ENT_COMPAT, "UTF-8", false)."</location>";
+        $out .= "<location>".htmlspecialchars($this->getLocation(), ENT_COMPAT, "UTF-8", false)."</location>";
         $out .= "<getVariables>";
         foreach ($_GET as $key => $value){
             $out .= "<variable key='".$key."' value='".$value."' />";
@@ -129,17 +138,12 @@ class FrameEx extends Exception {
     }
 
     public function getJSON() {
-        $location = "".$_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"];
-        if ($location == ""){
-            $location = "". $_SERVER["SCRIPT_FILENAME"];
-        }
-
-        return array(
-            'exception' => array(
+        return [
+            'exception' => [
                 'message' => htmlspecialchars($this->message, ENT_COMPAT, "UTF-8", false),
                 'code' => htmlspecialchars($this->code, ENT_COMPAT, "UTF-8", false)
-            )
-        );
+            ]
+        ];
     }
 
     /**
@@ -147,7 +151,7 @@ class FrameEx extends Exception {
      * @return array
      */
     public function getReversedTrace() {
-        $trace = array();
+        $trace = [];
 
         foreach (array_reverse($this->getTrace()) as $back) {
             $back['file'] = (array_key_exists("file", $back)) ? basename($back['file']) : "";
@@ -176,7 +180,7 @@ class FrameEx extends Exception {
      */
     public function persist() {
         if (!is_array($_SESSION["exceptions"])) {
-            $_SESSION["exceptions"] = array();
+            $_SESSION["exceptions"] = [];
         }
 
         $_SESSION["exceptions"][] = $this;
@@ -192,12 +196,12 @@ class FrameEx extends Exception {
             //store in temp var
             $execptions = $_SESSION["exceptions"];
             //clear from session
-            $_SESSION["exceptions"] = array();
+            $_SESSION["exceptions"] = [];
             //return
             return $execptions;
         }
 
-        return array();
+        return [];
     }
 
     /**
@@ -225,7 +229,7 @@ class FrameEx extends Exception {
             // This error code is not included in error_reporting
             return;
         }
-        $errortype = array (
+        $errortype = [
                         E_ERROR              => 'Error',
                         E_WARNING            => 'Warning',
                         E_PARSE              => 'Parsing Error',
@@ -239,7 +243,7 @@ class FrameEx extends Exception {
                         E_USER_NOTICE        => 'User Notice',
                         E_STRICT             => 'Runtime Notice',
                         E_RECOVERABLE_ERROR  => 'Recoverable Error'
-                    );
+                    ];
 
         $error = (array_key_exists($type, $errortype)) ? $errortype[$type] : $type;
         throw new FrameEx($error.": ".$msg." (line {$line} of ".basename($filename).")");
@@ -304,9 +308,9 @@ class FrameEx extends Exception {
      * Setup the error handling
      */
     public static function init() {
-        set_exception_handler(array("FrameEx", "exceptionHandler"));
-        set_error_handler(array("FrameEx", "errorHandler"), ini_get("error_reporting"));
-        register_shutdown_function(array("FrameEx", "fatalHandler"));
+        set_exception_handler(["FrameEx", "exceptionHandler"]);
+        set_error_handler(["FrameEx", "errorHandler"], ini_get("error_reporting"));
+        register_shutdown_function(["FrameEx", "fatalHandler"]);
     }
 
     public function getIP() {
