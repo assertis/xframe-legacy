@@ -22,7 +22,10 @@ class DB {
             self::$instance = new $class($db.":host=".Registry::get("DATABASE_HOST"). 
                                          (Registry::get("DATABASE_PORT") ? ";port=". Registry::get("DATABASE_PORT") : null). ";dbname=".Registry::get("DATABASE_NAME"),
                                          Registry::get("DATABASE_USERNAME"),
-                                         Registry::get("DATABASE_PASSWORD"));
+                                         Registry::get("DATABASE_PASSWORD"),
+                                         [
+                                             PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
+                                         ]);
             self::$instance->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         }
         catch (PDOException $ex) {
