@@ -79,9 +79,9 @@ class FrameEx extends Exception {
 
         switch ($this->severity) {
             case self::CRITICAL: 
-                $logger->error($this->message, $details); break;
+                $logger->fatal($this->message, $details); break;
             case self::HIGH: 
-                $logger->audit($this->message, $details); break;
+                $logger->error($this->message, $details); break;
             case self::MEDIUM: 
                 $logger->warn($this->message, $details); break;
             case self::LOW: 
