@@ -69,11 +69,28 @@ class FrameEx extends Exception {
      */
     protected function log() {
         error_log($_SERVER["REQUEST_URI"].": ".$this->message);
-        LoggerManager::getLogger("Exception")->error($this->message, [
+        
+        $logger = LoggerManager::getLogger("Exception");
+        $details = [
             'file' => $this->getFile(),
             'line' => $this->getLine(),
             'location' => $this->getLocation()
-        ]);
+        ];
+
+        switch ($this->severity) {
+            case self::CRITICAL: 
+                $logger->error($this->message, $details); break;
+            case self::HIGH: 
+                $logger->audit($this->message, $details); break;
+            case self::MEDIUM: 
+                $logger->warn($this->message, $details); break;
+            case self::LOW: 
+                $logger->info($this->message, $details); break;
+            case self::LOWEST: 
+                $logger->debug($this->message, $details); break;
+            default: 
+                $logger->warn($this->message, $details); break;
+        }
     }
 
     /**
