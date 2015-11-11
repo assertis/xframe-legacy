@@ -136,7 +136,6 @@ class Logger
         $message = $this->interpolateMessage($message, $context);
 
         $this->logToSyslog($level, $message, $context);
-        $this->logToDatabase($level, $message);
     }
 
     /**
@@ -169,6 +168,10 @@ class Logger
 
         $message = "<{$levelName}> {$message}";
         $message = $this->augumentMessageWithOrigin($message, $context);
+        $message = $this->augumentMessageWithClientIP($message);
+        $message = $this->augumentMessageWithTime($message);
+        $message = $this->augumentMessageWithSessionId($message);
+        $message = $this->augumentMessageWithExecutionTime($message);
 
         openlog($this->syslogId, LOG_PID | LOG_NDELAY, LOG_USER);
         syslog($level, $message);
@@ -247,25 +250,13 @@ class Logger
     }
 
     /**
-     * @param $level
      * @param $message
      *
-     * @throws FrameEx
+     * @return string
      */
-    private function logToDatabase($level, $message)
+    private function augumentMessageWithClientIP($message)
     {
-        $log = new Record($this->tableName);
-
-        $log->ip = $this->getIP();
-        $log->key = $this->key;
-        $log->level = $level;
-        $log->message = $message;
-        $log->date_time = date("Y-m-d H:i:s");
-        $log->session_id = session_id();
-        $log->execution_time = number_format(microtime(true) - Controller::getExecutionTime(), 5);
-
-        $saveGraph = [];
-        $log->save(false, $saveGraph, false);
+        return "{$message} ip:'{$this->getIP()}'";
     }
 
     /**
@@ -286,6 +277,64 @@ class Logger
         }
 
         return $ip;
+    }
+
+    /**
+     * @param $message
+     *
+     * @return string
+     */
+    private function augumentMessageWithTime($message)
+    {
+        $time = date('Y-m-d H:i:s');
+
+        return "{$message} date_time:'{$time}'";
+    }
+
+    /**
+     * @param $message
+     *
+     * @return string
+     */
+    private function augumentMessageWithSessionId($message)
+    {
+        $sessionId = session_id();
+
+        return "{$message} session_id:'{$sessionId}'";
+    }
+
+    /**
+     * @param $message
+     *
+     * @return string
+     */
+    private function augumentMessageWithExecutionTime($message)
+    {
+        $executionTime = number_format(microtime(true) - Controller::getExecutionTime(), 5);
+
+        return "{$message} execution_time:'{$executionTime}'";
+    }
+
+    /**
+     * @param $level
+     * @param $message
+     *
+     * @throws FrameEx
+     */
+    private function logToDatabase($level, $message)
+    {
+        $log = new Record($this->tableName);
+
+        $log->ip = $this->getIP();
+        $log->key = $this->key;
+        $log->level = $level;
+        $log->message = $message;
+        $log->date_time = date("Y-m-d H:i:s");
+        $log->session_id = session_id();
+        $log->execution_time = number_format(microtime(true) - Controller::getExecutionTime(), 5);
+
+        $saveGraph = [];
+        $log->save(false, $saveGraph, false);
     }
 
 }
