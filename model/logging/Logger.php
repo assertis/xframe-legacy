@@ -192,11 +192,11 @@ class Logger
             case self::INFO:
             case 'info':
                 return LOG_INFO;
-            case self::AUDIT:
-            case 'audit':
-                return LOG_INFO;
             case self::WARN:
             case 'warn':
+                return LOG_WARNING;
+            case self::AUDIT:
+            case 'audit':
                 return LOG_WARNING;
             case self::ERROR:
             case 'error':
