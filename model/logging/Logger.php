@@ -164,15 +164,6 @@ class Logger {
      */
     private function getSyslogLevel($level) {
         switch ($level) {
-<<<<<<< Updated upstream
-            case self::DEBUG: case 'debug': return LOG_DEBUG;
-            case self::INFO: case 'info': return LOG_INFO;
-            case self::AUDIT: case 'audit': return LOG_INFO;
-            case self::WARN: case 'warn': return LOG_WARNING;
-            case self::ERROR: case 'error': return LOG_ERR;
-            case self::FATAL: case 'fatal': return LOG_CRIT;
-            default: return LOG_ERR;
-=======
             case self::DEBUG:
             case 'debug':
                 return LOG_DEBUG;
@@ -193,7 +184,6 @@ class Logger {
                 return LOG_CRIT;
             default:
                 return LOG_ERR;
->>>>>>> Stashed changes
         }
     }
 
