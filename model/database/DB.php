@@ -75,7 +75,10 @@ class DB {
         try {
             self::$slave = new PDO($db.":host=".Registry::get("SLAVE_HOST"). (Registry::get("SLAVE_PORT") ? ";port=". Registry::get("SLAVE_PORT") : null). ";dbname=".Registry::get("DATABASE_NAME"),
                                    Registry::get("DATABASE_USERNAME"),
-                                   Registry::get("DATABASE_PASSWORD"));
+                                   Registry::get("DATABASE_PASSWORD"),
+                                   [
+                                       PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
+                                   ]);
             self::$slave->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         }
         catch (PDOException $ex) {
