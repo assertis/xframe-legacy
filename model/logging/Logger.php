@@ -12,6 +12,7 @@ class Logger
     const DEBUG = 6, INFO = 5, WARN = 4, AUDIT = 3, ERROR = 2, FATAL = 1, OFF = 0;
 
     private $key;
+    private $dbLogEnabled;
     private $tableName;
     private $logLevel;
     private $syslogId;
@@ -22,6 +23,7 @@ class Logger
     public function __construct($key)
     {
         $this->key = $key;
+        $this->dbLogEnabled = false;
         $this->setSyslogId(Registry::get('LOG_ID'));
         $this->setLogTable(Registry::get('LOG_TABLE', 'log'));
         $this->setLogLevel(Registry::get('LOG_LEVEL', self::OFF));
@@ -56,6 +58,19 @@ class Logger
     public function setLogLevel($level)
     {
         $this->logLevel = $level;
+    }
+
+    public function enableDbLog()
+    {
+        $this->dbLogEnabled = true;
+    }
+
+    /**
+     * @return bool
+     */
+    private function isDbLogEnabled()
+    {
+        return $this->dbLogEnabled;
     }
 
     /**
@@ -136,6 +151,9 @@ class Logger
         $message = $this->interpolateMessage($message, $context);
 
         $this->logToSyslog($level, $message, $context);
+        if ($this->isDbLogEnabled()) {
+            $this->logToDatabase($level, $message);
+        }
     }
 
     /**
@@ -286,9 +304,17 @@ class Logger
      */
     private function augumentMessageWithTime($message)
     {
-        $time = date('Y-m-d H:i:s');
+        $time = $this->getDate();
 
         return "{$message} date_time:'{$time}'";
+    }
+
+    /**
+     * @return bool|string
+     */
+    private function getDate()
+    {
+        return date('Y-m-d H:i:s');
     }
 
     /**
@@ -310,31 +336,69 @@ class Logger
      */
     private function augumentMessageWithExecutionTime($message)
     {
-        $executionTime = number_format(microtime(true) - Controller::getExecutionTime(), 5);
+        $executionTime = $this->getExecutionTime();
 
         return "{$message} execution_time:'{$executionTime}'";
     }
 
     /**
-     * @param $level
-     * @param $message
+     * @return string
+     */
+    private function getExecutionTime()
+    {
+        return number_format(microtime(true) - Controller::getExecutionTime(), 5);
+    }
+
+    /**
+     * @param int|string $xframeLevel
+     * @param string $message
      *
      * @throws FrameEx
      */
-    private function logToDatabase($level, $message)
+    private function logToDatabase($xframeLevel, $message)
     {
         $log = new Record($this->tableName);
 
         $log->ip = $this->getIP();
         $log->key = $this->key;
-        $log->level = $level;
+        $log->level = $this->getDatabaseLevel($xframeLevel);
         $log->message = $message;
-        $log->date_time = date("Y-m-d H:i:s");
+        $log->date_time = $this->getDate();
         $log->session_id = session_id();
-        $log->execution_time = number_format(microtime(true) - Controller::getExecutionTime(), 5);
+        $log->execution_time = $this->getExecutionTime();
 
         $saveGraph = [];
         $log->save(false, $saveGraph, false);
     }
 
+    /**
+     * @param int|string $level
+     *
+     * @return string
+     */
+    private function getDatabaseLevel($level)
+    {
+        switch ($level) {
+            case self::DEBUG:
+            case 'debug':
+                return 'debug';
+            case self::INFO:
+            case 'info':
+                return 'info';
+            case self::WARN:
+            case 'warn':
+                return 'warn';
+            case self::AUDIT:
+            case 'audit':
+                return 'audit';
+            case self::ERROR:
+            case 'error':
+                return 'error';
+            case self::FATAL:
+            case 'fatal':
+                return 'fatal';
+            default:
+                return 'error';
+        }
+    }
 }

@@ -9,6 +9,7 @@ class LoggerManager
 {
     private static $loggers = array();
     private static $verboseLoggers = array();
+    private static $verboseDatabaseLoggers = array();
 
     /**
      * Return the requested logger if one does not exist, create on
@@ -40,5 +41,24 @@ class LoggerManager
             self::$verboseLoggers[$key] = $logger;
         }
         return self::$verboseLoggers[$key];
+    }
+
+    /**
+     * Return the requested logger that saves also to db
+     *
+     * @param string $key
+     *
+     * @return Logger
+     */
+    public static function getVerboseDatabaseLogger($key)
+    {
+        if (!array_key_exists($key, self::$verboseDatabaseLoggers)
+                || !self::$verboseDatabaseLoggers[$key] instanceof Logger) {
+            $logger = new Logger($key);
+            $logger->enableDbLog();
+            $logger->setLogLevel(Logger::DEBUG);
+            self::$verboseDatabaseLoggers[$key] = $logger;
+        }
+        return self::$verboseDatabaseLoggers[$key];
     }
 }
