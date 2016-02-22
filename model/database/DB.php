@@ -8,6 +8,8 @@
  * This is essentially a singleton for a PDO database
  */
 class DB {
+    const TIME_OUT = 5;
+
     private static $instance;
     private static $slave;
 
@@ -19,14 +21,20 @@ class DB {
         $class = Registry::get("DATABASE_DEBUG") ? "LoggedPDO" : "PDO";
 
         try {
-            self::$instance = new $class($db.":host=".Registry::get("DATABASE_HOST"). 
-                                         (Registry::get("DATABASE_PORT") ? ";port=". Registry::get("DATABASE_PORT") : null). ";dbname=".Registry::get("DATABASE_NAME"),
-                                         Registry::get("DATABASE_USERNAME"),
-                                         Registry::get("DATABASE_PASSWORD"),
-                                         [
-                                             PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
-                                         ]);
-            self::$instance->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $url = $db.":host=".Registry::get("DATABASE_HOST");
+            $url .= Registry::get("DATABASE_PORT") ? ";port=". Registry::get("DATABASE_PORT") : '';
+            $url .= ";dbname=".Registry::get("DATABASE_NAME");
+
+            self::$instance = new $class(
+                $url,
+                Registry::get("DATABASE_USERNAME"),
+                Registry::get("DATABASE_PASSWORD"),
+                [
+                    PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
+                    PDO::ATTR_TIMEOUT => static::TIME_OUT,
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+                ]
+            );
         }
         catch (PDOException $ex) {
             throw new FrameEx("Could not connect to database", 0, FrameEx::HIGH, $ex);
