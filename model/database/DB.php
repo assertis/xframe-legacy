@@ -8,7 +8,7 @@
  * This is essentially a singleton for a PDO database
  */
 class DB {
-    const TIME_OUT = 5;
+    const CONNECT_TIMEOUT = 5;
 
     private static $instance;
     private static $slave;
@@ -31,7 +31,7 @@ class DB {
                 Registry::get("DATABASE_PASSWORD"),
                 [
                     PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
-                    PDO::ATTR_TIMEOUT => static::TIME_OUT,
+                    PDO::ATTR_TIMEOUT => static::CONNECT_TIMEOUT,
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
                 ]
             );
