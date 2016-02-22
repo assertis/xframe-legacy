@@ -50,9 +50,6 @@ class FrameEx extends Exception {
         if (Registry::get("ERROR_LOG_LEVEL") >= $this->severity) {
             $this->log();
         }
-        if (Registry::get("ERROR_EMAIL_LEVEL") >= $this->severity) {
-            $this->email();
-        }
     }
 
     /**
@@ -91,30 +88,6 @@ class FrameEx extends Exception {
             default: 
                 $logger->warn($this->message, $details); break;
         }
-    }
-
-    /**
-     * Email the error to the ADMIN
-     */
-    protected function email() {
-        $headers  = 'MIME-Version: 1.0' . "\r\n";
-        $headers .= 'From: "'.$_SERVER["SERVER_NAME"].'" <xframe@'.$_SERVER["SERVER_NAME"].'>' . "\r\n";
-        $headers .= 'Content-type: text/plain; charset=iso-8859-1' . "\r\n";
-
-
-        mail(Registry::get("ADMIN"),
-             substr($this->message,0,79),
-             $this->getContent(),
-             $headers);
-    }
-
-    /**
-     * Get the readable content for this exception
-     */
-    private function getContent() {
-        $xslFile = APP_DIR."view/".Registry::get("PLAIN_TEXT_ERROR").".xsl";
-        $transformation = new Transformation("<root><exceptions>".$this->getXML()."</exceptions></root>", $xslFile);
-        return $transformation->execute();
     }
 
     /**
@@ -184,12 +157,7 @@ class FrameEx extends Exception {
      * @return string
      */
     public function __toString() {
-        try {
-            return $this->getContent();
-        }
-        catch (Exception $e) {
-            return "Error generating exception content. Original message: ".$this->message;
-        }
+        return $this->message;
     }
 
     /**
@@ -237,7 +205,6 @@ class FrameEx extends Exception {
         $this->message = $message;
     }
 
-
     /**
      * Handles PHP generated errors
      */
@@ -246,53 +213,25 @@ class FrameEx extends Exception {
             // This error code is not included in error_reporting
             return;
         }
+
         $errortype = [
-                        E_ERROR              => 'Error',
-                        E_WARNING            => 'Warning',
-                        E_PARSE              => 'Parsing Error',
-                        E_NOTICE             => 'Notice',
-                        E_CORE_ERROR         => 'Core Error',
-                        E_CORE_WARNING       => 'Core Warning',
-                        E_COMPILE_ERROR      => 'Compile Error',
-                        E_COMPILE_WARNING    => 'Compile Warning',
-                        E_USER_ERROR         => 'User Error',
-                        E_USER_WARNING       => 'User Warning',
-                        E_USER_NOTICE        => 'User Notice',
-                        E_STRICT             => 'Runtime Notice',
-                        E_RECOVERABLE_ERROR  => 'Recoverable Error'
-                    ];
+            E_ERROR              => 'Error',
+            E_WARNING            => 'Warning',
+            E_PARSE              => 'Parsing Error',
+            E_NOTICE             => 'Notice',
+            E_CORE_ERROR         => 'Core Error',
+            E_CORE_WARNING       => 'Core Warning',
+            E_COMPILE_ERROR      => 'Compile Error',
+            E_COMPILE_WARNING    => 'Compile Warning',
+            E_USER_ERROR         => 'User Error',
+            E_USER_WARNING       => 'User Warning',
+            E_USER_NOTICE        => 'User Notice',
+            E_STRICT             => 'Runtime Notice',
+            E_RECOVERABLE_ERROR  => 'Recoverable Error'
+        ];
 
         $error = (array_key_exists($type, $errortype)) ? $errortype[$type] : $type;
         throw new FrameEx($error.": ".$msg." (line {$line} of ".basename($filename).")");
-    }
-
-    // TODO: temp fatal error catching
-    public static function fatalHandler() {
-        $error = error_get_last();
-        if ($error['type'] === E_ERROR || $error['type'] === E_PARSE) {
-            $errno   = $error['type'];
-            $errfile = $error['file'];
-            $errline = $error['line'];
-            $errstr  = $error['message'];
-
-            mail(Registry::get('ADMIN'),
-                substr($errstr, 0, 30),
-                self::formatError($errno, $errstr, $errfile, $errline)
-            );
-        }
-    }
-
-    // TODO: temp fatal error catching
-    public static function formatError($errno, $errstr, $errfile, $errline) {
-        $trace = print_r(debug_backtrace(false), true);
-
-        $content = "Error: {$errstr}\n";
-        $content .= "Errno:{$errno}\n";
-        $content .= "File: {$errfile}\n";
-        $content .= "Line: {$errline}\n";
-        $content .= "Trace: {$trace}\n";
-
-        return $content;
     }
 
     /**
@@ -327,23 +266,25 @@ class FrameEx extends Exception {
     public static function init() {
         set_exception_handler(["FrameEx", "exceptionHandler"]);
         set_error_handler(["FrameEx", "errorHandler"], ini_get("error_reporting"));
-        register_shutdown_function(["FrameEx", "fatalHandler"]);
     }
 
     public function getIP() {
-       if (getenv("HTTP_CLIENT_IP") && strcasecmp(getenv("HTTP_CLIENT_IP"),
-"unknown"))
+        if (getenv("HTTP_CLIENT_IP") && strcasecmp(getenv("HTTP_CLIENT_IP"),"unknown")){
            $ip = getenv("HTTP_CLIENT_IP");
-       else if (getenv("HTTP_X_FORWARDED_FOR") &&
-strcasecmp(getenv("HTTP_X_FORWARDED_FOR"), "unknown"))
+        }
+        else if (getenv("HTTP_X_FORWARDED_FOR") && strcasecmp(getenv("HTTP_X_FORWARDED_FOR"), "unknown")) {
            $ip = getenv("HTTP_X_FORWARDED_FOR");
-       else if (getenv("REMOTE_ADDR") && strcasecmp(getenv("REMOTE_ADDR"), "unknown"))
+        }
+        else if (getenv("REMOTE_ADDR") && strcasecmp(getenv("REMOTE_ADDR"), "unknown")) {
            $ip = getenv("REMOTE_ADDR");
-       else if (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] &&
-strcasecmp($_SERVER['REMOTE_ADDR'], "unknown"))
+        }
+        else if (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] && strcasecmp($_SERVER['REMOTE_ADDR'], "unknown")) {
            $ip = $_SERVER['REMOTE_ADDR'];
-       else
+        }
+        else {
            $ip = "unknown";
+        }
+
        return($ip);
     }
 
