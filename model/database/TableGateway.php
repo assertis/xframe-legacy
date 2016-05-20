@@ -246,4 +246,25 @@ class TableGateway {
             return " LIMIT {$num} ";
         }
     }
+
+    /**
+     * This method loads all of the records connected to the given source record using a join table.
+     *  
+     * @param  string   $joinTable
+     * @param  string   $sourceIdField
+     * @param  string   $targetIdField
+     * @param  number   $sourceId
+     * @param  callable $loadMethod
+     * @return array
+     */
+    public static function loadJoined($joinTable, $sourceIdField, $targetIdField, $sourceId, callable $loadMethod) {
+        $records = [];
+        $links = self::loadMatching($joinTable, Restriction::is($sourceIdField, $sourceId));
+
+        foreach ($links as $link) {
+            $records[] = call_user_func($loadMethod, $link->$targetIdField);
+        }
+
+        return $records;        
+    }
 }
