@@ -17,20 +17,20 @@ class Registry {
 
         //if the file does not exist, try to find the dev.ini
         if (!file_exists($file)) {
-            if (file_exists("config/".$file)) {
+            if (file_exists("config/".$file) && !is_dir("config/".$file)) {
                 $file = "config/".$file;
             }
             else if (file_exists($file.".ini")) {
                 $file = $file.".ini";
             }
-            else if (!file_exists("config/dev.ini")) {
-                trigger_error("Unable to find configuration file: ".$file);
-            }
-            else {
+            else if (file_exists("config/dev.ini")) {
                 $file = "config/dev.ini";
             }
+            else {
+                trigger_error("Unable to find configuration file: ".$file);
+            }
         }
-
+echo "LOADING {$file}".PHP_EOL;
         self::$settings = parse_ini_file($file);
         //setup the app dir
         $appDir = self::$settings["APP_DIR"];
