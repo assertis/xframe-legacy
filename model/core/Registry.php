@@ -30,7 +30,7 @@ class Registry {
                 trigger_error("Unable to find configuration file: ".$file);
             }
         }
-echo "LOADING {$file}".PHP_EOL;
+
         self::$settings = parse_ini_file($file);
         //setup the app dir
         $appDir = self::$settings["APP_DIR"];

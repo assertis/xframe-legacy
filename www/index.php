@@ -6,8 +6,8 @@
  * Welcome to xFrame. This file dispatches the request to be handled by the framework.
  */
 
-if (is_readable(__DIR__ . '/../vendor/autoload.php')) {
-    require_once __DIR__ . '/../vendor/autoload.php';
+if (is_readable(__DIR__ . '/../../../../vendor/autoload.php')) {
+    require_once __DIR__ . '/../../../../vendor/autoload.php';
 }
 
 require(dirname(__FILE__).'/../init.php');
