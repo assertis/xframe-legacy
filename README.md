@@ -1,3 +1,5 @@
+* Please note this project was deprecated years ago. You'd be insane to use it. *
+
 GETTING THE DEMO WORKING
 
 Virtual Host Configuration
