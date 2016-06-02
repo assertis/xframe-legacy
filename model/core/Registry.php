@@ -91,11 +91,7 @@ class Registry {
                 try {
                     Registry::loadFromDB($table);                        
                 }
-                catch(Exception $ex) {
-                    // retry just once more
-                    Registry::loadFromDB($table);
-                }
-
+                catch(Exception $ex) { }
             }
         }
         
