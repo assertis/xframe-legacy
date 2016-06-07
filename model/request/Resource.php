@@ -112,7 +112,7 @@ class Resource extends Record {
      * @param boolean $cascade
      * @param array $saveGraph
      */
-    public function save($cascade = false, array &$saveGraph = array()) {
+    public function save($cascade = false, array &$saveGraph = array(), $transactional = true) {
         $this->parameters = serialize($this->parameters);
         parent::save($cascade, $saveGraph);
         $this->parameters = unserialize($this->parameters);

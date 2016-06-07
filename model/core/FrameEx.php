@@ -55,7 +55,7 @@ class FrameEx extends Exception {
     /**
      * @return string
      */
-    private function getLocation() {
+    private static function getLocation() {
         return empty($_SERVER['REQUEST_URI'])?
             $_SERVER['SCRIPT_FILENAME']:
             $_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'];
@@ -71,7 +71,7 @@ class FrameEx extends Exception {
         $details = [
             'file' => $this->getFile(),
             'line' => $this->getLine(),
-            'location' => $this->getLocation()
+            'location' => self::getLocation()
         ];
 
         switch ($this->severity) {
@@ -97,7 +97,7 @@ class FrameEx extends Exception {
         $out = "<exception>";
         $out .= "<message>".htmlspecialchars($this->message, ENT_COMPAT, "UTF-8", false)."</message>";
         $out .= "<code>".htmlspecialchars($this->code, ENT_COMPAT, "UTF-8", false)."</code>";
-        $out .= "<location>".htmlspecialchars($this->getLocation(), ENT_COMPAT, "UTF-8", false)."</location>";
+        $out .= "<location>".htmlspecialchars(self::getLocation(), ENT_COMPAT, "UTF-8", false)."</location>";
         $out .= "<getVariables>";
         foreach ($_GET as $key => $value){
             $out .= "<variable key='".$key."' value='".$value."' />";
@@ -226,7 +226,7 @@ class FrameEx extends Exception {
             E_USER_ERROR         => 'User Error',
             E_USER_WARNING       => 'User Warning',
             E_USER_NOTICE        => 'User Notice',
-            E_STRICT             => 'Runtime Notice',
+            E_STRICT             => 'Strict',
             E_RECOVERABLE_ERROR  => 'Recoverable Error'
         ];
 

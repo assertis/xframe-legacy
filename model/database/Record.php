@@ -58,7 +58,7 @@ class Record implements XML, Transformable {
      * @param $class class to instantiate (will be replaced with __STATIC__ in 5.3)
      * @param $method function to call to initialize the class
      */
-    public static function load($tableName, $id, $class = "Record", $method = "create") {
+    public static function loadById($tableName, $id, $class = "Record", $method = "create") {
         $attributes = false;
 
         //lets try to get the data from the db

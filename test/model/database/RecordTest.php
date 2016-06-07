@@ -19,7 +19,7 @@ class RecordTest extends PHPUnit_Framework_TestCase {
         $record->save();
         $record->delete();
 
-        $loaded = Record::load($record->getTableName(), $record->getId());
+        $loaded = Record::loadById($record->getTableName(), $record->getId());
     }
 
     public function testSaveAndLoad() {
@@ -28,7 +28,7 @@ class RecordTest extends PHPUnit_Framework_TestCase {
 
     public function saveAndLoad(Record $record) {
         $record->save();
-        $loadedRecord = Record::load($record->getTableName(),
+        $loadedRecord = Record::loadbyId($record->getTableName(),
                                      $record->getId(),
                                      get_class($record));
 
