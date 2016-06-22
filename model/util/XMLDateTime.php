@@ -76,7 +76,7 @@ class XMLDateTime extends DateTime implements XML {
     /**
      * @return XMLDateTime note it will have a timezone of UTC
      */
-    public function diff(DateTime $datetime) {
+    public function diff($object, $absolute = null) {
         $date = new XMLDateTime("now", new DateTimeZone("UTC"));
         $date->setTimestamp($this->getTimestamp() - $datetime->getTimestamp());
         return $date;
