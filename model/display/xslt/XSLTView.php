@@ -79,7 +79,7 @@ class XSLTView extends View {
             return $this->data;
         }
 
-        $xml = $this->sanitizeXML($this->generateXML());
+        $xml = $this->generateXML();
         $transformation = new Transformation($xml, $this->template);
 
         if ($this->outputMode == self::OUTPUT_XML) {
@@ -90,21 +90,6 @@ class XSLTView extends View {
         }
 
         return $transformation->execute($this->parameters);
-    }
-
-    /**
-     * If xml contain "&" character in it, it can not be
-     * correctly loaded by DomDocument::loadXML(). It have to be
-     * "escaped". 
-     *
-     * @param string $xml
-     * @return string
-     */
-    private function sanitizeXML(string $xml): string
-    {
-        $xml = str_replace("&", "&amp;",$xml);
-
-        return $xml;
     }
 
     private function generateXML() {
