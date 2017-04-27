@@ -8,7 +8,7 @@ Controller::boot();
 Registry::init();
 Cache::init();
 Registry::loadDBSettings();
-FrameEx::init();
+ErrorHandler::init();
 
 //boot the app
 Factory::boot(APP_DIR);
