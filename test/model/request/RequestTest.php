@@ -1,12 +1,13 @@
 <?php
 
+use PHPUnit\Framework\TestCase;
 
 /**
  * Description of RequestTest
  *
  * @author Linus Norton <linusnorton@gmail.com>
  */
-class RequestTest extends PHPUnit_Framework_TestCase {
+class RequestTest extends TestCase {
 
     public function testBasicRequest() {
         $request = new Request("/my-request");
@@ -45,4 +46,3 @@ class RequestTest extends PHPUnit_Framework_TestCase {
 
     }
 }
-

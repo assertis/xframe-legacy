@@ -90,7 +90,6 @@ class FrameEx extends Exception {
         $out .= "<message>".htmlspecialchars($this->message, ENT_COMPAT, "UTF-8", false)."</message>";
         $out .= "<code>".htmlspecialchars($this->code, ENT_COMPAT, "UTF-8", false)."</code>";
         $out .= "<location>".htmlspecialchars(self::getLocation(), ENT_COMPAT, "UTF-8", false)."</location>";
-        $out .= $this->getVariablesXML('getVariables', $_GET);
         
         $out .= "<getVariables>";
         foreach ($_GET as $key => $value){

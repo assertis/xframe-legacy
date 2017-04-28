@@ -44,7 +44,7 @@ class ErrorHandler
      * @param string $msg
      * @param string $filename
      * @param int $line
-     * @throws ErrorException
+     * @throws FrameEx
      */
     public static function errorHandlerCallback(int $type, string $msg, string $filename, int $line): void
     {
@@ -52,7 +52,12 @@ class ErrorHandler
             return;
         }
 
-        throw new ErrorException($msg, 100, $type, $filename, $line);
+        throw new FrameEx(
+            '[PHP] ' . $msg,
+            100,
+            FrameEx::HIGH,
+            new ErrorException($msg, 100, $type, $filename, $line)
+        );
     }
 
     /**
@@ -65,10 +70,6 @@ class ErrorHandler
     {
         self::logException($exception);
         self::displayException($exception);
-
-        if (in_array(self::getSeverity($exception), [FrameEx::CRITICAL, FrameEx::HIGH])) {
-            die();
-        }
     }
 
     /**
@@ -79,24 +80,25 @@ class ErrorHandler
      */
     public static function logException(Throwable $exception, bool $force = false)
     {
-        $severity = self::getSeverity($exception);
+        $source = $exception->getPrevious() ?? $exception;
+        $severity = self::getSeverity($source);
 
         if (Registry::get('ERROR_LOG_LEVEL') < $severity && !$force) {
             return;
         }
 
-        $message = self::getMessage($exception);
+        $message = self::getMessage($source);
 
         error_log(sprintf(
             '%s: %s\n%s',
             $_SERVER["REQUEST_URI"],
             $message,
-            $exception->getTraceAsString()
+            $source->getTraceAsString()
         ));
 
         $details = [
-            'file'     => $exception->getFile(),
-            'line'     => $exception->getLine(),
+            'file'     => $source->getFile(),
+            'line'     => $source->getLine(),
             'location' => self::getLocation()
         ];
 
@@ -129,15 +131,16 @@ class ErrorHandler
      */
     private static function displayException(Throwable $exception): void
     {
-        $message = self::getMessage($exception);
+        $source = $exception->getPrevious() ?? $exception;
+        $message = self::getMessage($source);
 
         if (php_sapi_name() == 'cli') {
             print sprintf(
                 "\n%s\n  at %s:%s\n    %s\n",
                 $message,
-                $exception->getFile(),
-                $exception->getLine(),
-                str_replace("\n", "\n    ", $exception->getTraceAsString())
+                $source->getFile(),
+                $source->getLine(),
+                str_replace("\n", "\n    ", $source->getTraceAsString())
             );
         } else {
             $style = 'display:block;color:#FFF;background-color:#444;margin:1em;padding:1em';
@@ -145,9 +148,9 @@ class ErrorHandler
                 "<pre style='%s'><b>%s</b>\n&nbsp;&nbsp;at %s:%s\n<small>&nbsp;&nbsp;&nbsp;&nbsp;%s</small></pre>",
                 $style,
                 $message,
-                $exception->getFile(),
-                $exception->getLine(),
-                str_replace("\n", "\n&nbsp;&nbsp;&nbsp;&nbsp;", $exception->getTraceAsString())
+                $source->getFile(),
+                $source->getLine(),
+                str_replace("\n", "\n&nbsp;&nbsp;&nbsp;&nbsp;", $source->getTraceAsString())
             );
         }
     }
@@ -159,9 +162,11 @@ class ErrorHandler
     private static function getMessage(Throwable $exception): string
     {
         $severity = self::getSeverity($exception);
-        $name = self::getSeverityName($severity);
 
-        return sprintf('[%s] %s', $name, $exception->getMessage());
+        $name = self::getSeverityName($severity);
+        $message = $exception->getMessage();
+
+        return sprintf('[%s] %s', $name, $message);
     }
 
     /**

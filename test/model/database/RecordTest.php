@@ -1,7 +1,8 @@
 <?php
 
+use PHPUnit\Framework\TestCase;
 
-class RecordTest extends PHPUnit_Framework_TestCase {
+class RecordTest extends TestCase {
 
     public function testConstructAndSettersAndGetters() {
         $record = new Record();
