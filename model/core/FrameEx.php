@@ -35,6 +35,13 @@ class FrameEx extends Exception {
     }
 
     /**
+     * @return int
+     */
+    public function getSeverity(): int {
+        return $this->severity;
+    }
+    
+    /**
      * Reset the severity level
      * @param int $severity
      */
@@ -47,9 +54,7 @@ class FrameEx extends Exception {
      * to be logged or emailed (or both)
      */
     public function process() {
-        if (Registry::get("ERROR_LOG_LEVEL") >= $this->severity) {
-            $this->log();
-        }
+        ErrorHandler::logException($this);
     }
 
     /**
@@ -65,29 +70,16 @@ class FrameEx extends Exception {
      * Log using the error_log and LoggerManager
      */
     protected function log() {
-        error_log($_SERVER["REQUEST_URI"].": ".$this->message."\n".$this->getTraceAsString());
+        ErrorHandler::logException($this, true);
+    }
 
-        $logger = LoggerManager::getLogger("Exception");
-        $details = [
-            'file' => $this->getFile(),
-            'line' => $this->getLine(),
-            'location' => self::getLocation()
-        ];
-
-        switch ($this->severity) {
-            case self::CRITICAL: 
-                $logger->fatal($this->message, $details); break;
-            case self::HIGH: 
-                $logger->error($this->message, $details); break;
-            case self::MEDIUM: 
-                $logger->warn($this->message, $details); break;
-            case self::LOW: 
-                $logger->info($this->message, $details); break;
-            case self::LOWEST: 
-                $logger->debug($this->message, $details); break;
-            default: 
-                $logger->warn($this->message, $details); break;
-        }
+    /**
+     * @param mixed $key
+     * @param mixed $value
+     * @return string
+     */
+    private function getVariableXML($key, $value): string {
+        return "<variable key=\"" . htmlspecialchars($key) . "\" value=\"" . htmlspecialchars($value) . "\" />";
     }
 
     /**
@@ -98,32 +90,34 @@ class FrameEx extends Exception {
         $out .= "<message>".htmlspecialchars($this->message, ENT_COMPAT, "UTF-8", false)."</message>";
         $out .= "<code>".htmlspecialchars($this->code, ENT_COMPAT, "UTF-8", false)."</code>";
         $out .= "<location>".htmlspecialchars(self::getLocation(), ENT_COMPAT, "UTF-8", false)."</location>";
+        
         $out .= "<getVariables>";
         foreach ($_GET as $key => $value){
-            $out .= "<variable key='".$key."' value='".$value."' />";
+            $out .= $this->getVariableXML($key, $value);
         }
         $out .= "</getVariables>";
+        
         $out .= "<postVariables>";
         foreach ($_POST as $key => $value){
-            if (strstr($key,"card")){
-                continue;
-            }
-            else {
-                $out .= "<variable key='".$key."' value='".$value."' />";
+            if (!strstr($key,"card")){
+                $out .= $this->getVariableXML($key, $value);
             }
         }
         $out .= "</postVariables>";
-        $out .= "<ipaddress>".$this->getIP()."</ipaddress>";
+        
+        $out .= "<ipaddress>".htmlspecialchars($this->getIP())."</ipaddress>";
+
         $out .= "<backtrace>";
         $i = 1;
-
         foreach ($this->getReversedTrace() as $back) {
             if ($back["class"] != "FrameEx") {
                 $out .= "<step number='".$i++."' line='{$back['line']}' file='{$back['file']}' class='{$back['class']}' function='{$back['function']}' />";
             }
         }
         $out .= "</backtrace>";
+        
         $out .= "</exception>";
+        
         return $out;
     }
 
@@ -206,66 +200,10 @@ class FrameEx extends Exception {
     }
 
     /**
-     * Handles PHP generated errors
-     */
-    public static function errorHandler($type, $msg, $filename, $line ) {
-        if (!(error_reporting() & $type)) {
-            // This error code is not included in error_reporting
-            return;
-        }
-
-        $errortype = [
-            E_ERROR              => 'Error',
-            E_WARNING            => 'Warning',
-            E_PARSE              => 'Parsing Error',
-            E_NOTICE             => 'Notice',
-            E_CORE_ERROR         => 'Core Error',
-            E_CORE_WARNING       => 'Core Warning',
-            E_COMPILE_ERROR      => 'Compile Error',
-            E_COMPILE_WARNING    => 'Compile Warning',
-            E_USER_ERROR         => 'User Error',
-            E_USER_WARNING       => 'User Warning',
-            E_USER_NOTICE        => 'User Notice',
-            E_STRICT             => 'Strict',
-            E_RECOVERABLE_ERROR  => 'Recoverable Error'
-        ];
-
-        $error = (array_key_exists($type, $errortype)) ? $errortype[$type] : $type;
-        throw new FrameEx($error.": ".$msg." (line {$line} of ".basename($filename).")");
-    }
-
-    /**
-     * If an exception is thrown that is not in a try catch statement it comes
-     * here. It is then output to the screen and code execution stops
-     *
-     * @param Exception $exception
-     */
-    public static function exceptionHandler($exception) {
-        //if it's not a FrameEx make it one
-        if (!($exception instanceof FrameEx)) {
-            $exception = new FrameEx($exception->getMessage(),
-                                     $exception->getCode(),
-                                     FrameEx::HIGH,
-                                     $exception);
-        }
-
-        try {
-            $exception->process();
-        }
-        catch (Exception $e) {
-            trigger_error("Error logging exception: ".$e->getMessage());
-        }
-
-        //finally echo it out
-        trigger_error($exception->__toString());
-    }
-
-    /**
      * Setup the error handling
      */
     public static function init() {
-        set_exception_handler(["FrameEx", "exceptionHandler"]);
-        set_error_handler(["FrameEx", "errorHandler"], ini_get("error_reporting"));
+        ErrorHandler::init();
     }
 
     public function getIP() {
