@@ -47,6 +47,17 @@ class InputValidator {
     public static function isEmpty($input) {
         return empty($input);
     }
+	
+    /**
+     * Check to see if the given input is not empty.
+     * It do not consider "0" string as a empty.
+     *
+     * @param $input
+     * @return bool
+     */
+    public static function isEmptyString($input) {
+	return strlen((string)$input) === 0;
+    }	
 
     /**
      * Check to see if the string === null
