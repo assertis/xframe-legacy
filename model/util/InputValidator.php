@@ -56,7 +56,7 @@ class InputValidator {
      * @return bool
      */
     public static function isEmptyString($input) {
-	return strlen((string)$input) === 0;;
+	return strlen((string)$input) === 0;
     }	
 
     /**
