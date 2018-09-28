@@ -45,7 +45,7 @@ class ErrorHandler
     /**
      * @param ExceptionHandlerInterface $handler
      */
-    public static function addHandler(ExceptionHandlerInterface $handler)
+    public static function addHandler(ExceptionHandlerInterface $handler): void
     {
         self::$additionalHandlers[]  = $handler;
     }
