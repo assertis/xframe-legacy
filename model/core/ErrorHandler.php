@@ -30,6 +30,9 @@ class ErrorHandler
         FrameEx::LOWEST   => 'INFO',
     ];
 
+    /** @var Raven_Client */
+    private static $sentryClient = null;
+
     /**
      * Setup the error handling
      */
@@ -37,6 +40,14 @@ class ErrorHandler
     {
         set_exception_handler([self::class, 'exceptionHandlerCallback']);
         set_error_handler([self::class, 'errorHandlerCallback'], ini_get('error_reporting'));
+    }
+
+    /**
+     * @param Raven_Client $client
+     */
+    public static function registerSentry(Raven_Client $client): void
+    {
+        self::$sentryClient = $client;
     }
 
     /**
@@ -85,6 +96,10 @@ class ErrorHandler
 
         if (Registry::get('ERROR_LOG_LEVEL') < $severity && !$force) {
             return;
+        }
+
+        if(self::$sentryClient) {
+            self::$sentryClient->exception($exception);
         }
 
         $message = self::getMessage($source);
