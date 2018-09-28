@@ -30,8 +30,8 @@ class ErrorHandler
         FrameEx::LOWEST   => 'INFO',
     ];
 
-    /** @var Raven_Client */
-    private static $sentryClient = null;
+    /** @var ExceptionHandlerInterface[] */
+    private static $additionalHandlers = [];
 
     /**
      * Setup the error handling
@@ -43,11 +43,11 @@ class ErrorHandler
     }
 
     /**
-     * @param Raven_Client $client
+     * @param ExceptionHandlerInterface $handler
      */
-    public static function registerSentry(Raven_Client $client): void
+    public static function addHandler(ExceptionHandlerInterface $handler)
     {
-        self::$sentryClient = $client;
+        self::$additionalHandlers[]  = $handler;
     }
 
     /**
@@ -98,8 +98,8 @@ class ErrorHandler
             return;
         }
 
-        if(self::$sentryClient) {
-            self::$sentryClient->exception($exception);
+        foreach (self::$additionalHandlers as $handler) {
+            $handler->exception($exception);
         }
 
         $message = self::getMessage($source);
