@@ -47,7 +47,7 @@ class ErrorHandler
      */
     public static function addHandler(ExceptionHandlerInterface $handler): void
     {
-        self::$additionalHandlers[]  = $handler;
+        self::$additionalHandlers[] = $handler;
     }
 
     /**
@@ -99,6 +99,7 @@ class ErrorHandler
         }
 
         foreach (self::$additionalHandlers as $handler) {
+            /** @var ExceptionHandlerInterface $handler */
             $handler->exception($exception);
         }
 
