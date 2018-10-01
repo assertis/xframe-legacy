@@ -30,6 +30,9 @@ class ErrorHandler
         FrameEx::LOWEST   => 'INFO',
     ];
 
+    /** @var ExceptionHandlerInterface[] */
+    private static $additionalHandlers = [];
+
     /**
      * Setup the error handling
      */
@@ -37,6 +40,14 @@ class ErrorHandler
     {
         set_exception_handler([self::class, 'exceptionHandlerCallback']);
         set_error_handler([self::class, 'errorHandlerCallback'], ini_get('error_reporting'));
+    }
+
+    /**
+     * @param ExceptionHandlerInterface $handler
+     */
+    public static function addHandler(ExceptionHandlerInterface $handler): void
+    {
+        self::$additionalHandlers[] = $handler;
     }
 
     /**
@@ -85,6 +96,11 @@ class ErrorHandler
 
         if (Registry::get('ERROR_LOG_LEVEL') < $severity && !$force) {
             return;
+        }
+
+        foreach (self::$additionalHandlers as $handler) {
+            /** @var ExceptionHandlerInterface $handler */
+            $handler->exception($exception);
         }
 
         $message = self::getMessage($source);
