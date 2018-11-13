@@ -27,7 +27,11 @@
 
         //load the class mapping
         try {
-            include($tmpPath.".request-map.php");
+            $filename = $tmpPath."request-map.php";
+            if(!file_exists($filename)) {
+                RequestMapGenerator::build($package);
+            }
+            include($filename);
         }
         catch (FrameEx  $ex) {
             RequestMapGenerator::build($package);
