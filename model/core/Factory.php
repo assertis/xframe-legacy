@@ -14,7 +14,6 @@
      * @param string $package
      */
     public static function boot($package) {
-        $tmpPath = sys_get_temp_dir().'/'.str_replace('/',"_",realpath($package));
 
         //boot
         try {
@@ -25,10 +24,9 @@
             throw $ex;
         }
 
-        //load the class mapping
-        $filename = $tmpPath."request-map.php";
+        $filename = RequestMapGenerator::getRequestMapFilename($package);
         if(!file_exists($filename)) {
-            RequestMapGenerator::build($package);
+            $filename = RequestMapGenerator::build($package);
         }
         include($filename);
 

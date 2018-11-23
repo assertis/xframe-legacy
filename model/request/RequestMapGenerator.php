@@ -22,6 +22,7 @@ class RequestMapGenerator {
 
         //for each file in the directory
         while (($file = readdir($dh)) !== false) {
+            $string = '';
             //if it is something we want to ignore...
             if (strpos($file, '.') === 0 || $file == "test" || $file == "vendor") {
                 continue;
@@ -126,9 +127,7 @@ class RequestMapGenerator {
      */
     private static function writeRequestMap($package, $contents) {
         $contents = "<?php\n\n// controllers in: {$package}\n{$contents}";
-
-        $filename = str_replace("/", "_",realpath($package));
-        $filename = sys_get_temp_dir().DIRECTORY_SEPARATOR.$filename.".request-map.php";
+        $filename = self::getRequestMapFilename($package);
 
         try {
             file_put_contents($filename, $contents);
@@ -170,7 +169,17 @@ class RequestMapGenerator {
     public static function build($package) {
         $generator = new RequestMapGenerator();
         $contents = $generator->buildDirectory($package.'/controller/');
-        self::writeRequestMap($package, $contents);
+        return self::writeRequestMap($package, $contents);
+    }
+
+    /**
+     * @param $package
+     * @return string
+     */
+    public static function getRequestMapFilename($package)
+    {
+        $filename = str_replace("/", "_",realpath($package));
+        return sys_get_temp_dir().DIRECTORY_SEPARATOR.$filename.".request-map.php";
     }
 }
 
