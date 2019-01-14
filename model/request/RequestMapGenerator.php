@@ -20,9 +20,10 @@ class RequestMapGenerator {
             return;
         }
 
+        $string = '';
+
         //for each file in the directory
         while (($file = readdir($dh)) !== false) {
-            $string = '';
             //if it is something we want to ignore...
             if (strpos($file, '.') === 0 || $file == "test" || $file == "vendor") {
                 continue;
