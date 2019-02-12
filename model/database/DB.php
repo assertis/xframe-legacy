@@ -153,3 +153,10 @@ class DB {
         throw new FrameEx("Could not commit the transaction in the given number of retries.");
     }
 }
+
+/**
+ * Close current database connection.
+ */
+public static function close() {
+    self::$instance = null;
+}
