@@ -14,8 +14,7 @@ class InputValidator {
      * @param $email string email address input to validate
      */ 
     public static function isEmail($email) {
-        $pattern = '/^([\w\-\.\']+)@((\[([0-9]{1,3}\.){3}[0-9]{1,3}\])|(([\w\-]+\.)+)([a-zA-Z]{2,4}))$/';
-        return (preg_match($pattern, $email)) ? true : false;        
+	return (bool)filter_var($email, FILTER_VALIDATE_EMAIL);      
     }
 
     /**
