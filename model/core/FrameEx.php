@@ -79,7 +79,24 @@ class FrameEx extends Exception {
      * @return string
      */
     private function getVariableXML($key, $value): string {
+        if (is_array($value)) {
+            return $this->getArrayVariableXML($key, $value);
+        }
         return "<variable key=\"" . htmlspecialchars($key) . "\" value=\"" . htmlspecialchars($value) . "\" />";
+    }
+
+    /**
+     * @param mixed $key
+     * @param array $value
+     * @return string
+     */
+    private function getArrayVariableXML($externalKey, $value): string {
+        $result = [];
+        foreach ($value as $internalKey => $val) {
+            $key = "{$externalKey}[{$internalKey}]";
+            $result[] = $this->getVariableXML($key, $val);
+        }
+        return implode($result);
     }
 
     /**
