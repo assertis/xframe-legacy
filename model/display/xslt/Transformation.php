@@ -69,9 +69,9 @@ class Transformation implements XML {
             $dom->loadXML($xml);
         }
         catch (FrameEx $ex) {
-            throw new FrameEx("Could not create DOM with xml\n\n: ".$xml);
+            throw new FrameEx("Could not create DOM: ".$ex->getMessage()." at\n\n".$ex->getTraceAsString()."\n\nwith xml:\n\n".$xml);
         }
-        
+
         $dom->xinclude();
         return $dom;
     }
