@@ -40,7 +40,7 @@ class Controller {
 
         $viewClass = $resource->getViewType() == null ? Registry::get("DEFAULT_VIEW") : $resource->getViewType();
         $this->view = new $viewClass($request->debug);
-        
+
         if ($resource->getViewTemplate() != null) {
             $this->view->setTemplate($resource->getViewTemplate());
         }
@@ -204,7 +204,13 @@ class Controller {
             }
             //if we got a url to redirect to
             else if ($authResult !== true) {
-                $this->redirect($authResult);
+                if ($this->request->getRequestType() === 'GET') {
+                    $url = $authResult . '?then=' . urlencode($_SERVER['REQUEST_URI']);
+                } else {
+                    $url = $authResult;
+                }
+
+                $this->redirect($url);
             }
         }
     }
